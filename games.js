@@ -77,11 +77,11 @@ function timerBar(container, seconds, onDone, signal) {
 
 /* ── Sound effects via santaSound (sound.js) ── */
 function playCelebration() {
-  if (window.santaSound) window.santaSound.play("celebrate");
+  try { window.santaSound.play("celebrate"); } catch(e) {}
 }
 
 function playWompWomp() {
-  if (window.santaSound) window.santaSound.play("womp");
+  try { window.santaSound.play("womp"); } catch(e) {}
 }
 
 /* ── Snowflake celebration overlay ── */
@@ -123,9 +123,16 @@ export function wordUnscramble(container) {
     let round = 0;
     const maxRounds = 5;
     const MAX_WRONG = 3;
+    let done = false;
+
+    function skip() {
+      if (done) return;
+      done = true;
+      resolve({ game: "unscramble", score });
+    }
 
     function nextRound() {
-      if (signal.aborted) return;
+      if (signal.aborted || done) return;
       if (round >= maxRounds) { finish(); return; }
       container.innerHTML = "";
       const word = pick(XMAS_WORDS);
@@ -143,12 +150,13 @@ export function wordUnscramble(container) {
       const input = h("input", { type: "text", class: "game-input", placeholder: "Type your answer...", autocomplete: "off" });
       const btnRow = h("div", { class: "game-btn-row" });
       const btn = h("button", { type: "button", class: "game-btn" }, "Submit");
-      btnRow.append(btn, hintBtn);
+      const skipBtn = h("button", { type: "button", class: "game-btn game-skip-btn" }, "Skip Game");
+      btnRow.append(btn, hintBtn, skipBtn);
       const feedback = h("div", { class: "game-feedback" });
 
       container.append(title, prompt, hintText, input, btnRow, feedback);
+      skipBtn.addEventListener("click", skip);
 
-      // Build progressive hints
       const blanks = word.split("").map((ch, i) => i === 0 ? ch.toUpperCase() : "_").join(" ");
       hintBtn.addEventListener("click", () => {
         if (hintShown || signal.aborted) return;
@@ -157,12 +165,6 @@ export function wordUnscramble(container) {
         hintBtn.disabled = true;
         hintBtn.style.opacity = "0.5";
       });
-
-      let stopTimer = timerBar(container, 30, () => {
-        if (roundOver || signal.aborted) return;
-        roundOver = true;
-        revealAnswer();
-      }, signal);
 
       function revealAnswer() {
         if (signal.aborted) return;
@@ -183,7 +185,6 @@ export function wordUnscramble(container) {
           score += 10;
           feedback.textContent = "Correct!";
           feedback.style.color = "var(--green)";
-          stopTimer();
           input.disabled = true;
           btn.disabled = true;
           playCelebration();
@@ -194,13 +195,11 @@ export function wordUnscramble(container) {
           playWompWomp();
           if (wrongCount >= MAX_WRONG) {
             roundOver = true;
-            stopTimer();
             revealAnswer();
           } else {
             feedback.innerHTML = `<span style="color:var(--accent)">Not quite! ${MAX_WRONG - wrongCount} tries left.</span>`;
             input.value = "";
             input.focus();
-            // Auto-show hint after 2 wrong attempts
             if (wrongCount >= 2 && !hintShown) {
               hintShown = true;
               hintText.textContent = `Hint: ${blanks}  (${word.length} letters, starts with "${word[0].toUpperCase()}")`;
@@ -217,17 +216,19 @@ export function wordUnscramble(container) {
     }
 
     function finish() {
-      if (signal.aborted) return;
+      if (signal.aborted || done) return;
       container.innerHTML = "";
       const msg = h("div", { class: "game-result" }, `You scored ${score} points!`);
       if (score > 0) {
         playCelebration();
         snowflakeCelebration();
       }
-      const btn = h("button", { type: "button", class: "game-btn" }, "Done");
-      btn.addEventListener("click", () => resolve({ game: "unscramble", score }));
-      container.append(msg, btn);
-      btn.focus();
+      const btnRow = h("div", { class: "game-btn-row" });
+      const doneBtn = h("button", { type: "button", class: "game-btn" }, "Done");
+      doneBtn.addEventListener("click", () => { done = true; resolve({ game: "unscramble", score }); });
+      btnRow.append(doneBtn);
+      container.append(msg, btnRow);
+      doneBtn.focus();
     }
 
     nextRound();
@@ -244,14 +245,20 @@ export function numberTarget(container) {
     let score = 0;
     let round = 0;
     const maxRounds = 3;
+    let done = false;
+
+    function skip() {
+      if (done) return;
+      done = true;
+      resolve({ game: "numberTarget", score });
+    }
 
     function nextRound() {
-      if (signal.aborted) return;
+      if (signal.aborted || done) return;
       if (round >= maxRounds) { finish(); return; }
       container.innerHTML = "";
       round++;
 
-      // Generate 4 numbers and a reachable target
       const nums = Array.from({ length: 4 }, () => Math.floor(Math.random() * 12) + 1);
       const target = generateTarget(nums);
 
@@ -260,21 +267,16 @@ export function numberTarget(container) {
         `Make ${target} using: ${nums.join(", ")}  (+ \u2212 \u00D7 \u00F7)`);
       const hint = h("div", { class: "game-hint" }, "Type an expression like: 3 + 5 * 2 - 1");
       const input = h("input", { type: "text", class: "game-input", placeholder: "e.g. 3 + 5 * 2", autocomplete: "off" });
+      const btnRow = h("div", { class: "game-btn-row" });
       const btn = h("button", { type: "button", class: "game-btn" }, "Submit");
+      const skipBtn = h("button", { type: "button", class: "game-btn game-skip-btn" }, "Skip Game");
+      btnRow.append(btn, skipBtn);
       const feedback = h("div", { class: "game-feedback" });
 
-      container.append(title, prompt, hint, input, btn, feedback);
+      container.append(title, prompt, hint, input, btnRow, feedback);
+      skipBtn.addEventListener("click", skip);
 
       let roundOver = false;
-      let stopTimer = timerBar(container, 30, () => {
-        if (roundOver || signal.aborted) return;
-        roundOver = true;
-        playWompWomp();
-        feedback.innerHTML = `<span style="color:var(--accent)">Time's up!</span>`;
-        input.disabled = true;
-        btn.disabled = true;
-        safeTimeout(nextRound, 1500, signal);
-      }, signal);
 
       function check() {
         if (roundOver || signal.aborted) return;
@@ -307,7 +309,6 @@ export function numberTarget(container) {
             score += 20;
             feedback.textContent = "Correct!";
             feedback.style.color = "var(--green)";
-            stopTimer();
             input.disabled = true;
             btn.disabled = true;
             playCelebration();
@@ -333,17 +334,19 @@ export function numberTarget(container) {
     }
 
     function finish() {
-      if (signal.aborted) return;
+      if (signal.aborted || done) return;
       container.innerHTML = "";
       const msg = h("div", { class: "game-result" }, `You scored ${score} points!`);
       if (score > 0) {
         playCelebration();
         snowflakeCelebration();
       }
-      const btn = h("button", { type: "button", class: "game-btn" }, "Done");
-      btn.addEventListener("click", () => resolve({ game: "numberTarget", score }));
-      container.append(msg, btn);
-      btn.focus();
+      const btnRow = h("div", { class: "game-btn-row" });
+      const doneBtn = h("button", { type: "button", class: "game-btn" }, "Done");
+      doneBtn.addEventListener("click", () => { done = true; resolve({ game: "numberTarget", score }); });
+      btnRow.append(doneBtn);
+      container.append(msg, btnRow);
+      doneBtn.focus();
     }
 
     nextRound();
@@ -399,14 +402,20 @@ export function rhymeMatch(container) {
     let round = 0;
     const maxRounds = 6;
     const usedGroups = new Set();
+    let done = false;
+
+    function skip() {
+      if (done) return;
+      done = true;
+      resolve({ game: "rhymeMatch", score });
+    }
 
     function nextRound() {
-      if (signal.aborted) return;
+      if (signal.aborted || done) return;
       if (round >= maxRounds) { finish(); return; }
       container.innerHTML = "";
       round++;
 
-      // Pick a rhyme group we haven't used
       let groupIdx;
       do { groupIdx = Math.floor(Math.random() * RHYME_PAIRS.length); }
       while (usedGroups.has(groupIdx) && usedGroups.size < RHYME_PAIRS.length);
@@ -415,34 +424,24 @@ export function rhymeMatch(container) {
       const group = RHYME_PAIRS[groupIdx];
       const targetWord = group[0];
       const correctAnswer = pick(group.slice(1));
-      // 3 distractors
       const distractors = shuffle(DISTRACTOR_WORDS).slice(0, 3);
       const options = shuffle([correctAnswer, ...distractors]);
 
       const title = h("div", { class: "game-round" }, `Round ${round}/${maxRounds}`);
       const prompt = h("div", { class: "game-prompt" }, `Which word rhymes with "${targetWord}"?`);
       const optionsDiv = h("div", { class: "game-options" });
+      const skipBtn = h("button", { type: "button", class: "game-btn game-skip-btn" }, "Skip Game");
 
-      container.append(title, prompt, optionsDiv);
+      container.append(title, prompt, optionsDiv, skipBtn);
+      skipBtn.addEventListener("click", skip);
 
       let answered = false;
-      let stopTimer = timerBar(container, 30, () => {
-        if (answered || signal.aborted) return;
-        answered = true;
-        playWompWomp();
-        for (const b of optionsDiv.children) {
-          if (b.textContent === correctAnswer) b.style.background = "var(--green)";
-          b.disabled = true;
-        }
-        safeTimeout(nextRound, 1500, signal);
-      }, signal);
 
       for (const opt of options) {
         const btn = h("button", { type: "button", class: "game-option-btn" }, opt);
         btn.addEventListener("click", () => {
           if (answered || signal.aborted) return;
           answered = true;
-          stopTimer();
           if (opt === correctAnswer) {
             score += 10;
             btn.style.background = "var(--green)";
@@ -465,17 +464,19 @@ export function rhymeMatch(container) {
     }
 
     function finish() {
-      if (signal.aborted) return;
+      if (signal.aborted || done) return;
       container.innerHTML = "";
       const msg = h("div", { class: "game-result" }, `You scored ${score} points!`);
       if (score > 0) {
         playCelebration();
         snowflakeCelebration();
       }
-      const btn = h("button", { type: "button", class: "game-btn" }, "Done");
-      btn.addEventListener("click", () => resolve({ game: "rhymeMatch", score }));
-      container.append(msg, btn);
-      btn.focus();
+      const btnRow = h("div", { class: "game-btn-row" });
+      const doneBtn = h("button", { type: "button", class: "game-btn" }, "Done");
+      doneBtn.addEventListener("click", () => { done = true; resolve({ game: "rhymeMatch", score }); });
+      btnRow.append(doneBtn);
+      container.append(msg, btnRow);
+      doneBtn.focus();
     }
 
     nextRound();

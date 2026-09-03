@@ -75,6 +75,7 @@ function renderAdvent() {
     } else {
       door.innerHTML = `<span class="door-num">${day}</span>`;
       if (unlocked) {
+        door.setAttribute("data-sound", "open");
         door.addEventListener("click", () => openAdventDoor(day));
       }
     }
@@ -386,3 +387,10 @@ showView("tracker");
 if (window.santaSound) {
   window.santaSound.createControl($("sound-control-mount"));
 }
+// Clear any stale mute state from earlier debugging — one-time reset
+try {
+  if (localStorage.getItem("santa:sound") === "0") {
+    localStorage.removeItem("santa:sound");
+    if (window.santaSound) window.santaSound.setEnabled(true);
+  }
+} catch(e) {}

@@ -344,6 +344,31 @@ label{display:block;font-size:.85rem;color:#8899bb;margin:8px 0 4px}
 .game-btn-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
 .game-hint-btn{background:var(--border)}
 .game-hint-btn:hover:not(:disabled){background:#2a3a7a}
+.game-skip-btn{background:transparent;border:1px solid var(--border);color:#8899bb;font-weight:400;font-size:.8rem}
+.game-skip-btn:hover{background:var(--border);color:var(--text)}
+
+/* ═══ Sound control ═══ */
+.snd-control{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:4px 6px;border-radius:999px;background:rgba(255,255,255,.07);
+}
+.snd-btn{
+  display:grid;place-items:center;width:34px;height:34px;padding:0;
+  border:none;border-radius:50%;background:transparent;color:#FFD277;cursor:pointer;
+}
+.snd-btn:hover{background:rgba(255,210,119,.16)}
+.snd-btn:focus-visible{outline:3px solid #FFD277;outline-offset:2px}
+.snd-btn[aria-pressed="false"]{color:#8FA6C4}
+.snd-range{
+  width:0;opacity:0;margin:0;
+  transition:width .18s ease,opacity .18s ease;
+  accent-color:#FFD277;cursor:pointer;
+}
+.snd-control:hover .snd-range,
+.snd-control:focus-within .snd-range{width:84px;opacity:1}
+.snd-range:focus-visible{outline:2px solid #FFD277;outline-offset:3px;border-radius:999px}
+@media(hover:none){.snd-range{width:84px;opacity:1}}
+@media(prefers-reduced-motion:reduce){.snd-range{transition:none}}
 
 /* ═══ Print stylesheet for Letter ═══ */
 @media print{

@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Santa's Christmas Eve Flight Tracker</title>
 <link rel="stylesheet" href="styles.css">
-<link rel="stylesheet" href="assets/sound-control.css">
 </head>
 <body>
 
@@ -15,12 +14,12 @@
   <span id="user-greeting" class="nav-greeting"></span>
   <div id="sound-control-mount"></div>
   <div class="nav-links">
-    <button type="button" class="nav-btn active" data-view="tracker">Tracker</button>
-    <button type="button" class="nav-btn" data-view="advent">Advent</button>
-    <button type="button" class="nav-btn" data-view="workshop">Workshop</button>
-    <button type="button" class="nav-btn" data-view="letter">Letter</button>
-    <button type="button" class="nav-btn" data-view="nicelist">Nice List</button>
-    <button type="button" class="nav-btn" data-view="customizer">Customizer</button>
+    <button type="button" class="nav-btn active" data-view="tracker" data-sound="click">Tracker</button>
+    <button type="button" class="nav-btn" data-view="advent" data-sound="click">Advent</button>
+    <button type="button" class="nav-btn" data-view="workshop" data-sound="click">Workshop</button>
+    <button type="button" class="nav-btn" data-view="letter" data-sound="click">Letter</button>
+    <button type="button" class="nav-btn" data-view="nicelist" data-sound="click">Nice List</button>
+    <button type="button" class="nav-btn" data-view="customizer" data-sound="click">Customizer</button>
   </div>
 </nav>
 
@@ -125,7 +124,7 @@
       <div class="hero-copy">
         <h1 class="hero-title">He's on his way</h1>
         <p class="hero-sub">Follow the sleigh across the world on Christmas Eve.</p>
-        <button class="hero-btn" type="button" id="start-tracking">Start tracking</button>
+        <button class="hero-btn" type="button" id="start-tracking" data-sound="bell">Start tracking</button>
         <p class="hero-count" id="hero-countdown"></p>
       </div>
     </section>
