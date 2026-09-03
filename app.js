@@ -13,7 +13,7 @@ const $ = (id) => document.getElementById(id);
 const esc = (s) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
 /* ── Navigation ── */
-const views = ["tracker", "advent", "workshop", "letter", "nicelist", "customizer", "photo"];
+const views = ["tracker", "advent", "workshop", "letter", "nicelist", "customizer"];
 
 function showView(id) {
   // Kill any running game when switching views
@@ -362,98 +362,6 @@ function updateSleighPreview() {
   }
 
   drawSleighOnCanvas(ctx, w / 2, hh / 2 - 10, 1.2, color, rName);
-}
-
-/* ═══════════════════════════════════════════
-   PHOTO OF SANTA
-   ═══════════════════════════════════════════ */
-$("photo-generate-btn")?.addEventListener("click", generatePhoto);
-
-function generatePhoto() {
-  const cityName = $("photo-city-input").value.trim() || "My City";
-  const canvas = $("photo-canvas");
-  const ctx = canvas.getContext("2d");
-  const w = canvas.width = 600;
-  const hh = canvas.height = 400;
-
-  state = loadState();
-  const color = state.sleighColor || "#cc0000";
-  const rName = state.reindeerName || "Rudolph";
-
-  // Night sky gradient
-  const grad = ctx.createLinearGradient(0, 0, 0, hh);
-  grad.addColorStop(0, "#050a1a");
-  grad.addColorStop(0.6, "#0a1440");
-  grad.addColorStop(1, "#141e50");
-  ctx.fillStyle = grad;
-  ctx.fillRect(0, 0, w, hh);
-
-  // Stars
-  for (let i = 0; i < 80; i++) {
-    const sx = Math.random() * w;
-    const sy = Math.random() * hh * 0.55;
-    const sr = Math.random() * 1.5 + 0.5;
-    ctx.fillStyle = `rgba(255,255,255,${Math.random() * 0.6 + 0.2})`;
-    ctx.beginPath(); ctx.arc(sx, sy, sr, 0, Math.PI * 2); ctx.fill();
-  }
-
-  // Moon
-  ctx.fillStyle = "#ffe680";
-  ctx.beginPath(); ctx.arc(w - 80, 60, 30, 0, Math.PI * 2); ctx.fill();
-  ctx.fillStyle = "#050a1a";
-  ctx.beginPath(); ctx.arc(w - 68, 52, 28, 0, Math.PI * 2); ctx.fill();
-
-  // Skyline — procedural buildings
-  const skylineY = hh * 0.6;
-  ctx.fillStyle = "#0a0f2e";
-  const buildingCount = 18;
-  for (let i = 0; i < buildingCount; i++) {
-    const bx = (w / buildingCount) * i;
-    const bw = w / buildingCount + 4;
-    const bh = 40 + Math.random() * 100;
-    ctx.fillRect(bx, skylineY - bh, bw, bh + 200);
-    // Windows
-    ctx.fillStyle = "rgba(255,200,50,0.6)";
-    for (let wy = skylineY - bh + 8; wy < skylineY - 4; wy += 14) {
-      for (let wx = bx + 4; wx < bx + bw - 4; wx += 10) {
-        if (Math.random() > 0.3) ctx.fillRect(wx, wy, 5, 7);
-      }
-    }
-    ctx.fillStyle = "#0a0f2e";
-  }
-
-  // Snow ground
-  ctx.fillStyle = "#c8d8f0";
-  ctx.fillRect(0, skylineY + 10, w, hh - skylineY);
-  // Snow bumps
-  ctx.fillStyle = "#dce8f8";
-  for (let i = 0; i < 8; i++) {
-    ctx.beginPath();
-    ctx.ellipse(Math.random() * w, skylineY + 15 + Math.random() * 20, 40 + Math.random() * 30, 10, 0, 0, Math.PI * 2);
-    ctx.fill();
-  }
-
-  // Sleigh in the sky (async — draw city name after it loads)
-  drawSleighOnCanvas(ctx, w * 0.45, hh * 0.2, 1.4, color, rName).then(() => {
-    // City name
-    ctx.fillStyle = "#ffd700";
-    ctx.font = "bold 28px 'Segoe UI', sans-serif";
-    ctx.textAlign = "center";
-    ctx.shadowColor = "rgba(0,0,0,0.5)";
-    ctx.shadowBlur = 6;
-    ctx.fillText(`Christmas Eve over ${cityName}`, w / 2, hh - 30);
-    ctx.shadowBlur = 0;
-
-    // Download button
-    const dlBtn = $("photo-download-btn");
-    dlBtn.classList.remove("hidden");
-    dlBtn.onclick = () => {
-      const link = document.createElement("a");
-      link.download = `santa-over-${cityName.replace(/\s+/g, "-").toLowerCase()}.png`;
-      link.href = canvas.toDataURL("image/png");
-      link.click();
-    };
-  });
 }
 
 /* ═══════════════════════════════════════════

@@ -277,11 +277,6 @@ label{display:block;font-size:.85rem;color:#8899bb;margin:8px 0 4px}
   max-width:100%;
 }
 
-/* ═══ Photo of Santa ═══ */
-#photo-canvas{
-  background:var(--bg);
-}
-
 /* ═══ Game Modal ═══ */
 .modal-overlay{
   position:fixed;top:0;left:0;right:0;bottom:0;
