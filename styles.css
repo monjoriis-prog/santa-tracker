@@ -31,6 +31,31 @@ input,textarea{
 input:focus,textarea:focus{outline:2px solid var(--blue);border-color:var(--blue)}
 label{display:block;font-size:.85rem;color:#8899bb;margin:8px 0 4px}
 
+/* ═══ Hero Banner ═══ */
+.hero{position:relative;border-radius:16px;overflow:hidden;background:#0A2140;margin:0}
+.hero svg{display:block;width:100%;height:auto}
+.hero-copy{position:absolute;left:0;right:0;top:8%;text-align:center;padding:0 24px;text-shadow:0 2px 12px rgba(6,16,36,.9),0 0 26px rgba(6,16,36,.7)}
+.hero-title{margin:0;font-size:clamp(30px,5.2vw,52px);font-weight:600;color:#FFF6EC;letter-spacing:-.5px}
+.hero-sub{margin:10px 0 0;font-size:clamp(14px,1.9vw,18px);color:#D8E7F4}
+.hero-btn{margin-top:22px;background:#E24B4A;color:#FFF6EC;border:none;border-radius:999px;padding:14px 30px;font-size:16px;font-weight:600;cursor:pointer}
+.hero-btn:hover{background:#c83a3a}
+.hero-btn:focus-visible{outline:3px solid #FFD277;outline-offset:3px}
+.hero-count{margin:14px 0 0;font-size:14px;color:#FFD277}
+@keyframes hero-fall{to{transform:translateY(470px)}}
+@keyframes hero-sway{0%,100%{transform:translateX(-9px)}50%{transform:translateX(9px)}}
+@keyframes hero-spin{to{transform:rotate(360deg)}}
+@keyframes twk{0%,100%{opacity:.25}50%{opacity:1}}
+@keyframes cross{0%{transform:translate(920px,172px)}24%{transform:translate(636px,126px)}100%{transform:translate(-260px,84px)}}
+@keyframes wisp{0%{transform:translate(0,0) scale(.5);opacity:0}22%{opacity:.6}70%{opacity:.3}100%{transform:translate(-11px,-28px) scale(1.05);opacity:0}}
+@keyframes glow{0%,100%{opacity:1}50%{opacity:.62}}
+.sk{animation:cross 20s linear infinite}
+.hero-flake{transform-box:fill-box;transform-origin:center}
+.hero-wisp{transform-box:fill-box;transform-origin:50% 100%}
+@media(prefers-reduced-motion:reduce){
+  .sk,.hero-sn,.hero-sw,.hero-flake,.hero-wisp,.hero-bulb,.hero-win{animation:none!important}
+  .hero-wisp{opacity:.4}
+}
+
 /* ═══ Nav Bar ═══ */
 #main-nav{
   display:flex;align-items:center;gap:8px;
