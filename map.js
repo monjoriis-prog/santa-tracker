@@ -570,8 +570,8 @@ function updateSanta() {
     setText("next-eta", "On Christmas Eve!");
     setText("gift-count", "0");
     setText("gift-sub", "Loading the sleigh\u2026");
-    setText("local-time", "\u2014");
-    setText("local-tz", "");
+    // Off-season: show local time at first stop (Apia) as a fallback
+    updateLocalTimePanel(realNow, ROUTE[0].lng);
     setText("distance-val", "0 km");
     setText("speed-val", "0 km/h");
     return;
@@ -635,18 +635,28 @@ function updateSanta() {
     setText("speed-val", "0 km/h");
   }
 
-  // Local time at Santa's position
-  const offsetHours = Math.round(st.lng / 15);
-  const localMs = simNow + offsetHours * 3600000;
-  const localDate = new Date(localMs);
-  setText(
-    "local-time",
-    pad2(localDate.getUTCHours()) +
-      ":" +
-      pad2(localDate.getUTCMinutes()) +
-      ":" +
-      pad2(localDate.getUTCSeconds())
-  );
+  // Local time at Santa's position — use sleigh lng, fall back to next stop
+  const lng = (typeof st.lng === "number" && !isNaN(st.lng))
+    ? st.lng
+    : (st.nextIdx != null ? ROUTE[st.nextIdx].lng : ROUTE[0].lng);
+  updateLocalTimePanel(simNow, lng);
+}
+
+function updateLocalTimePanel(utcMs, lng) {
+  if (typeof lng !== "number" || isNaN(lng)) {
+    setText("local-time", "\u2014");
+    setText("local-tz", "");
+    return;
+  }
+  const offsetHours = Math.round(lng / 15);
+  const localMs = utcMs + offsetHours * 3600000;
+  const d = new Date(localMs);
+  let h = d.getUTCHours();
+  const m = d.getUTCMinutes();
+  const s = d.getUTCSeconds();
+  const ampm = h >= 12 ? "pm" : "am";
+  h = h % 12 || 12;
+  setText("local-time", `${h}:${pad2(m)}:${pad2(s)} ${ampm}`);
   setText("local-tz", `UTC${offsetHours >= 0 ? "+" : ""}${offsetHours}`);
 }
 
