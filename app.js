@@ -398,6 +398,10 @@ showView("tracker");
 if (window.santaSound) {
   window.santaSound.createControl($("sound-control-mount"));
 }
+// Wire music toggle — never autoplay, only from user click
+if (window.santaMusic) {
+  window.santaMusic.attachToggle($("music-toggle"));
+}
 // Clear any stale mute state from earlier debugging — one-time reset
 try {
   if (localStorage.getItem("santa:sound") === "0") {

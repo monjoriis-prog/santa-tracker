@@ -410,6 +410,15 @@ label{display:block;font-size:.85rem;color:var(--ink-soft);margin:8px 0 4px}
 .level-btn .card-icon{flex-shrink:0}
 .level-desc{font-size:.75rem;color:var(--ink-soft);margin:2px 0 0 4px}
 
+/* ═══ Music toggle ═══ */
+.music-toggle-btn{
+  background:transparent;border:1px solid rgba(240,230,210,.15);
+  color:var(--ink-soft);padding:5px 12px;font-size:.75rem;
+  border-radius:999px;font-weight:500;white-space:nowrap;
+}
+.music-toggle-btn:hover{background:rgba(240,230,210,.08);color:var(--ink)}
+.music-toggle-btn[aria-pressed="true"]{background:rgba(240,230,210,.12);color:var(--amber);border-color:var(--amber)}
+
 /* ═══ Sound control ═══ */
 .snd-control{
   display:inline-flex;align-items:center;gap:8px;

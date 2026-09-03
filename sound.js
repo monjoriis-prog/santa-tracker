@@ -65,17 +65,27 @@
   }
 
   // The first gesture of any kind unlocks audio. Listeners remove themselves.
+  // Safari macOS needs 'mousedown'/'click'; iOS needs 'touchstart'.
+  var UNLOCK_EVENTS = ['pointerdown', 'mousedown', 'touchstart', 'keydown', 'click'];
   function unlock() {
     if (unlocked) return;
     var c = ensureCtx();
     if (!c) return;
     if (c.state === 'suspended') c.resume();
+    // Safari sometimes needs a tiny silent buffer played during the gesture
+    try {
+      var b = c.createBuffer(1, 1, c.sampleRate);
+      var s = c.createBufferSource();
+      s.buffer = b;
+      s.connect(c.destination);
+      s.start(0);
+    } catch (e) {}
     unlocked = true;
-    ['pointerdown', 'touchstart', 'keydown'].forEach(function (evt) {
+    UNLOCK_EVENTS.forEach(function (evt) {
       global.removeEventListener(evt, unlock, true);
     });
   }
-  ['pointerdown', 'touchstart', 'keydown'].forEach(function (evt) {
+  UNLOCK_EVENTS.forEach(function (evt) {
     global.addEventListener(evt, unlock, true);
   });
 
@@ -251,8 +261,11 @@
       if (!fn) return;
       var c = ensureCtx();
       if (!c) return;
-      if (c.state === 'suspended') c.resume();
-      try { fn(); } catch (e) {}
+      if (c.state === 'suspended') {
+        c.resume().then(function () { try { fn(); } catch (e) {} });
+      } else {
+        try { fn(); } catch (e) {}
+      }
     },
     isEnabled: function () { return enabled; },
     setEnabled: function (on) {
