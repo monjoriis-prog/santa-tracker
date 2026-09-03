@@ -542,17 +542,17 @@ function updateCountdownOverlay(realNow) {
 
 /* ── Main update ── */
 function updateSanta() {
-  if (!projection) return;
   const simNow = getSimTime();
   const st = getSantaState(simNow);
   const realNow = Date.now();
   const inSeason = isChristmasSeason(realNow);
   const inSimSeason = speedMode !== "real" || inSeason;
 
-  // Position Santa on map
-  const pos = projection([st.lng, st.lat]);
-  // The #rig group spans ~240x110; offset so its visual centre (~120,55) lands on pos
-  if (pos) santaG.attr("transform", `translate(${pos[0] - 120 * 0.42},${pos[1] - 55 * 0.42}) scale(0.42)`);
+  // Position Santa on map (only if map projection is ready)
+  if (projection) {
+    const pos = projection([st.lng, st.lat]);
+    if (pos) santaG.attr("transform", `translate(${pos[0] - 120 * 0.42},${pos[1] - 55 * 0.42}) scale(0.42)`);
+  }
 
   const overlay = document.getElementById("countdown-overlay");
 
