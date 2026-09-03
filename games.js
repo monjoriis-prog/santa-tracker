@@ -75,61 +75,13 @@ function timerBar(container, seconds, onDone, signal) {
   return () => { stopped = true; };
 }
 
-/* ── Sound effects via Web Audio API ── */
-let audioCtx = null;
-function getAudioCtx() {
-  if (!audioCtx) {
-    try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch { /* no audio */ }
-  }
-  return audioCtx;
-}
-
+/* ── Sound effects via santaSound (sound.js) ── */
 function playCelebration() {
-  const ctx = getAudioCtx();
-  if (!ctx) return;
-  // Bright ascending chime: C5 → E5 → G5 → C6
-  const notes = [523.25, 659.25, 783.99, 1046.50];
-  notes.forEach((freq, i) => {
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = "triangle";
-    osc.frequency.value = freq;
-    gain.gain.setValueAtTime(0.25, ctx.currentTime + i * 0.12);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.12 + 0.5);
-    osc.connect(gain).connect(ctx.destination);
-    osc.start(ctx.currentTime + i * 0.12);
-    osc.stop(ctx.currentTime + i * 0.12 + 0.5);
-  });
-  // Extra sparkle burst
-  const sparkle = ctx.createOscillator();
-  const sg = ctx.createGain();
-  sparkle.type = "sine";
-  sparkle.frequency.value = 1568;
-  sg.gain.setValueAtTime(0.15, ctx.currentTime + 0.5);
-  sg.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 1.0);
-  sparkle.connect(sg).connect(ctx.destination);
-  sparkle.start(ctx.currentTime + 0.5);
-  sparkle.stop(ctx.currentTime + 1.0);
+  if (window.santaSound) window.santaSound.play("celebrate");
 }
 
 function playWompWomp() {
-  const ctx = getAudioCtx();
-  if (!ctx) return;
-  // Three descending low tones: womp womp womp
-  const freqs = [250, 220, 180];
-  const times = [0, 0.3, 0.6];
-  freqs.forEach((freq, i) => {
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = "sawtooth";
-    osc.frequency.setValueAtTime(freq, ctx.currentTime + times[i]);
-    osc.frequency.exponentialRampToValueAtTime(freq * 0.7, ctx.currentTime + times[i] + 0.28);
-    gain.gain.setValueAtTime(0.18, ctx.currentTime + times[i]);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + times[i] + 0.28);
-    osc.connect(gain).connect(ctx.destination);
-    osc.start(ctx.currentTime + times[i]);
-    osc.stop(ctx.currentTime + times[i] + 0.3);
-  });
+  if (window.santaSound) window.santaSound.play("womp");
 }
 
 /* ── Snowflake celebration overlay ── */

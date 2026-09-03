@@ -1,0 +1,72 @@
+/* Sound control — speaker button with a volume slider that expands on
+   hover or keyboard focus. Colours match the hero palette. Paste into styles.css. */
+
+.snd-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.snd-btn {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: #FFD277;
+  cursor: pointer;
+}
+
+.snd-btn:hover {
+  background: rgba(255, 210, 119, 0.16);
+}
+
+.snd-btn:focus-visible {
+  outline: 3px solid #FFD277;
+  outline-offset: 2px;
+}
+
+.snd-btn[aria-pressed="false"] {
+  color: #8FA6C4;
+}
+
+/* Slider stays collapsed until the control is hovered or something inside
+   it has keyboard focus, so it doesn't crowd the header. */
+.snd-range {
+  width: 0;
+  opacity: 0;
+  margin: 0;
+  transition: width 0.18s ease, opacity 0.18s ease;
+  accent-color: #FFD277;
+  cursor: pointer;
+}
+
+.snd-control:hover .snd-range,
+.snd-control:focus-within .snd-range {
+  width: 84px;
+  opacity: 1;
+}
+
+.snd-range:focus-visible {
+  outline: 2px solid #FFD277;
+  outline-offset: 3px;
+  border-radius: 999px;
+}
+
+/* On touch screens there is no hover, so show the slider permanently. */
+@media (hover: none) {
+  .snd-range {
+    width: 84px;
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .snd-range { transition: none; }
+}

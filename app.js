@@ -381,3 +381,8 @@ function updateNameDisplay() {
 renderWorkshop();
 updateNameDisplay();
 showView("tracker");
+
+// Mount sound control in nav
+if (window.santaSound) {
+  window.santaSound.createControl($("sound-control-mount"));
+}
