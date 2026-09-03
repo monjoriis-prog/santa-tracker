@@ -115,10 +115,20 @@ $("game-modal-close")?.addEventListener("click", () => {
 /* ═══════════════════════════════════════════
    WORKSHOP HUB
    ═══════════════════════════════════════════ */
+/* Outline SVG icons — 24×24, stroke-based, no emoji */
+const ICONS = {
+  pencil: '<svg class="card-icon" viewBox="0 0 24 24"><path d="M17 3l4 4L7 21H3v-4L17 3z"/><path d="M14.5 5.5l4 4"/></svg>',
+  hash:   '<svg class="card-icon" viewBox="0 0 24 24"><path d="M4 9h16M4 15h16M10 3v18M14 3v18"/></svg>',
+  music:  '<svg class="card-icon" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>',
+  star1:  '<svg class="card-icon" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/></svg>',
+  star2:  '<svg class="card-icon" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/><circle cx="12" cy="12" r="3"/></svg>',
+  star3:  '<svg class="card-icon" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/><path d="M8 12h8M12 8v8"/></svg>',
+};
+
 const WORKSHOP_BUILDINGS = [
-  { id: "unscramble", name: "Word Workshop", icon: "\uD83D\uDCDD", desc: "Unscramble Christmas words!" },
-  { id: "numberTarget", name: "Number Forge", icon: "\uD83D\uDD27", desc: "Hit the target number!" },
-  { id: "rhymeMatch", name: "Rhyme Stable", icon: "\uD83C\uDFB6", desc: "Match the rhyming words!" },
+  { id: "unscramble", name: "Word Workshop", icon: ICONS.pencil, accent: "coral", desc: "Unscramble Christmas words!" },
+  { id: "numberTarget", name: "Number Forge", icon: ICONS.hash, accent: "teal", desc: "Hit the target number!" },
+  { id: "rhymeMatch", name: "Rhyme Stable", icon: ICONS.music, accent: "pink", desc: "Match the rhyming words!" },
 ];
 
 function renderWorkshop() {
@@ -131,6 +141,7 @@ function renderWorkshop() {
     const card = document.createElement("button");
     card.type = "button";
     card.className = "workshop-building";
+    card.setAttribute("data-accent", bldg.accent);
     const best = state.scores[bldg.id] || 0;
     card.innerHTML = `
       <span class="building-icon">${bldg.icon}</span>

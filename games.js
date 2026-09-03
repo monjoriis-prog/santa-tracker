@@ -513,10 +513,16 @@ export const GAME_LIST = [
   { id: "rhymeMatch", name: "Rhyme Match", fn: rhymeMatch, hasLevels: false, icon: "\uD83C\uDFB5" },
 ];
 
+const LEVEL_ICONS = {
+  beginner: '<svg class="card-icon" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  moderate: '<svg class="card-icon" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>',
+  advanced: '<svg class="card-icon" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 12h8M12 8v8" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>',
+};
+
 const LEVEL_OPTIONS = [
-  { id: "beginner",  label: "Beginner",  desc: "Short words, small numbers", emoji: "\uD83C\uDF1F" },
-  { id: "moderate",  label: "Moderate",  desc: "Medium challenge",           emoji: "\u2B50" },
-  { id: "advanced",  label: "Advanced",  desc: "Long words, big numbers",    emoji: "\uD83C\uDF1F\uD83C\uDF1F" },
+  { id: "beginner",  label: "Beginner",  desc: "Short words, small numbers" },
+  { id: "moderate",  label: "Moderate",  desc: "Medium challenge" },
+  { id: "advanced",  label: "Advanced",  desc: "Long words, big numbers" },
 ];
 
 function showLevelPicker(container, gameName) {
@@ -527,8 +533,11 @@ function showLevelPicker(container, gameName) {
     container.append(title, grid);
 
     for (const lvl of LEVEL_OPTIONS) {
-      const btn = h("button", { type: "button", class: "level-btn", "data-sound": "click" },
-        `${lvl.emoji} ${lvl.label}`);
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "level-btn";
+      btn.setAttribute("data-sound", "click");
+      btn.innerHTML = `${LEVEL_ICONS[lvl.id]} ${lvl.label}`;
       const desc = h("div", { class: "level-desc" }, lvl.desc);
       const wrap = h("div", { class: "level-option" });
       wrap.append(btn, desc);
