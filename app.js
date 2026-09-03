@@ -5,6 +5,7 @@
  */
 import { loadState, saveState } from "./storage.js";
 import { GAME_LIST, launchGame, abortActiveGame } from "./games.js";
+import { sleighSvgReady } from "./sleigh-loader.js";
 
 let state = loadState();
 
@@ -307,11 +308,6 @@ $("reindeer-name-input")?.addEventListener("input", (e) => {
 });
 
 /* ── Render sleigh.svg to canvas via recoloured SVG blob ── */
-// Store the fetch as a Promise so consumers can await it
-const sleighSvgReady = fetch("assets/sleigh.svg")
-  .then((r) => r.text())
-  .catch(() => null);
-
 /**
  * Build a colourised SVG blob URL and draw it onto a canvas context.
  * Waits for the SVG to be fetched if it hasn't arrived yet.

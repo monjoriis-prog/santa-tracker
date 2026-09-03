@@ -1,4 +1,5 @@
 import { loadState } from "./storage.js";
+import { sleighSvgReady } from "./sleigh-loader.js";
 
 let state = loadState();
 
@@ -350,10 +351,9 @@ function renderCityDots() {
 const santaG = g.append("g").attr("id", "santa-group");
 let reindeerLabel = null;
 
-// Fetch sleigh.svg, extract the #rig group, inject it into the map
-fetch("assets/sleigh.svg")
-  .then((r) => r.text())
-  .then((svgText) => {
+// Load sleigh.svg from shared loader, extract the #rig group, inject it into the map
+sleighSvgReady.then((svgText) => {
+    if (!svgText) return;
     const parser = new DOMParser();
     const doc = parser.parseFromString(svgText, "image/svg+xml");
     const rig = doc.getElementById("rig");
@@ -779,7 +779,7 @@ function doSearch() {
 }
 
 /* ── Load map data ── */
-d3.json("https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json")
+d3.json("assets/vendor/countries-110m.json")
   .then((world) => {
     const countries = topojson.feature(world, world.objects.countries);
     window._countries = countries;
