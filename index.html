@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Santa's Christmas Eve Flight Tracker</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- ─── Nav Bar ─── -->
+<nav id="main-nav" aria-label="Main navigation">
+  <span class="nav-title">Santa Tracker</span>
+  <span id="user-greeting" class="nav-greeting"></span>
+  <div class="nav-links">
+    <button type="button" class="nav-btn active" data-view="tracker">Tracker</button>
+    <button type="button" class="nav-btn" data-view="advent">Advent</button>
+    <button type="button" class="nav-btn" data-view="workshop">Workshop</button>
+    <button type="button" class="nav-btn" data-view="letter">Letter</button>
+    <button type="button" class="nav-btn" data-view="nicelist">Nice List</button>
+    <button type="button" class="nav-btn" data-view="customizer">Customizer</button>
+    <button type="button" class="nav-btn" data-view="photo">Photo</button>
+  </div>
+</nav>
+
+<div id="app">
+
+  <!-- ═══ VIEW: Tracker ═══ -->
+  <div id="view-tracker">
+    <div id="map-container">
+      <div id="countdown-overlay" class="hidden">
+        <div class="countdown-title">Santa takes off in</div>
+        <div class="countdown-boxes">
+          <div class="countdown-unit">
+            <div class="num" id="cd-days">--</div>
+            <div class="lbl">Days</div>
+          </div>
+          <div class="countdown-unit">
+            <div class="num" id="cd-hours">--</div>
+            <div class="lbl">Hours</div>
+          </div>
+          <div class="countdown-unit">
+            <div class="num" id="cd-mins">--</div>
+            <div class="lbl">Minutes</div>
+          </div>
+          <div class="countdown-unit">
+            <div class="num" id="cd-secs">--</div>
+            <div class="lbl">Seconds</div>
+          </div>
+        </div>
+        <div class="countdown-sub">First stop: Apia, Samoa</div>
+        <div class="countdown-demo-hint">Use the Demo buttons below to preview the flight!</div>
+      </div>
+      <div id="city-tooltip"></div>
+    </div>
+
+    <div id="panels">
+      <div class="panel" id="panel-status">
+        <h2>Flight Status</h2>
+        <div class="big" id="status-text">Loading&hellip;</div>
+        <div class="sub" id="status-sub"></div>
+      </div>
+      <div class="panel" id="panel-current">
+        <h2>Current Location</h2>
+        <div class="big" id="current-city">&mdash;</div>
+        <div class="fun-fact" id="current-fact"></div>
+        <div class="weather-info" id="current-weather"></div>
+      </div>
+      <div class="panel" id="panel-next">
+        <h2>Next Stop</h2>
+        <div class="big" id="next-city">&mdash;</div>
+        <div class="sub" id="next-eta"></div>
+      </div>
+      <div class="panel" id="panel-gifts">
+        <h2>Gifts Delivered</h2>
+        <div class="big" id="gift-count">0</div>
+        <div class="sub" id="gift-sub"></div>
+      </div>
+      <div class="panel" id="panel-distance">
+        <h2>Distance &amp; Speed</h2>
+        <div class="stat-row">
+          <span class="stat-label">Distance flown</span>
+          <span class="stat-value" id="distance-val">0 km</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Current speed</span>
+          <span class="stat-value" id="speed-val">0 km/h</span>
+        </div>
+      </div>
+      <div class="panel" id="panel-local">
+        <h2>Local Time at Santa</h2>
+        <div class="big" id="local-time">&mdash;</div>
+        <div class="sub" id="local-tz"></div>
+      </div>
+      <div class="panel" id="panel-speed">
+        <h2>Speed</h2>
+        <div id="speed-toggle" role="group" aria-label="Simulation speed">
+          <button type="button" data-speed="real" class="active">Real Time</button>
+          <button type="button" data-speed="slow">Demo (Slow)</button>
+          <button type="button" data-speed="fast">Demo (Fast)</button>
+        </div>
+      </div>
+      <div class="panel" id="search-panel">
+        <h2>Has Santa Visited Your City?</h2>
+        <div class="search-row">
+          <label for="city-search" class="sr-only">Search for a city</label>
+          <input type="text" id="city-search" placeholder="Type a city name&hellip;" autocomplete="off">
+          <button type="button" id="search-btn" aria-label="Search">Search</button>
+        </div>
+        <div id="search-result" aria-live="polite"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ VIEW: Advent Calendar ═══ -->
+  <div id="view-advent" class="hidden">
+    <div class="view-content">
+      <h1 class="view-title">Advent Calendar</h1>
+      <p class="view-desc">Open a door each day of December to find a treat and play a mini-game!</p>
+      <label class="dev-toggle-label">
+        <input type="checkbox" id="advent-dev-toggle">
+        <span>Unlock all doors (dev mode)</span>
+      </label>
+      <div id="advent-grid" class="advent-grid"></div>
+    </div>
+  </div>
+
+  <!-- ═══ VIEW: Workshop Hub ═══ -->
+  <div id="view-workshop" class="hidden">
+    <div class="view-content">
+      <h1 class="view-title">Santa's Workshop</h1>
+      <p class="view-desc">Visit any building to play a mini-game — no date lock, fun all year!</p>
+      <div id="workshop-grid" class="workshop-grid"></div>
+    </div>
+  </div>
+
+  <!-- ═══ VIEW: Letter to Santa ═══ -->
+  <div id="view-letter" class="hidden">
+    <div class="view-content view-narrow">
+      <h1 class="view-title">Write a Letter to Santa</h1>
+      <p class="view-desc">Fill in the form and see your decorated letter. Nothing is sent anywhere — it stays on your device!</p>
+      <form id="letter-form" class="letter-form">
+        <label for="letter-name">Your Name</label>
+        <input type="text" id="letter-name" placeholder="Your name" required>
+        <label for="letter-wishes">What do you wish for?</label>
+        <textarea id="letter-wishes" rows="3" placeholder="I wish for&hellip;"></textarea>
+        <label for="letter-deed">A good deed you did this year</label>
+        <textarea id="letter-deed" rows="2" placeholder="I helped&hellip;"></textarea>
+        <button type="submit" class="game-btn">Create My Letter</button>
+      </form>
+      <div id="letter-preview" class="hidden"></div>
+    </div>
+  </div>
+
+  <!-- ═══ VIEW: Nice List Check ═══ -->
+  <div id="view-nicelist" class="hidden">
+    <div class="view-content view-narrow">
+      <h1 class="view-title">Nice List Check</h1>
+      <p class="view-desc">Type a name and let Santa check his list!</p>
+      <div class="nice-form">
+        <label for="nice-name-input" class="sr-only">Name to check</label>
+        <input type="text" id="nice-name-input" placeholder="Type a name&hellip;">
+        <button type="button" id="nice-check-btn" class="game-btn">Check the List!</button>
+      </div>
+      <div id="nice-animation" class="hidden"></div>
+      <div id="nice-result" class="hidden"></div>
+    </div>
+  </div>
+
+  <!-- ═══ VIEW: Sleigh Customizer ═══ -->
+  <div id="view-customizer" class="hidden">
+    <div class="view-content view-narrow">
+      <h1 class="view-title">Sleigh Customizer</h1>
+      <p class="view-desc">Pick a color for your sleigh and name the lead reindeer. Your choices show up on the tracker map!</p>
+      <div class="customizer-controls">
+        <label for="sleigh-color-input">Sleigh Color</label>
+        <input type="color" id="sleigh-color-input" value="#cc0000">
+        <label for="reindeer-name-input">Lead Reindeer Name</label>
+        <input type="text" id="reindeer-name-input" placeholder="Rudolph" maxlength="20">
+      </div>
+      <h2 class="preview-label">Preview</h2>
+      <canvas id="sleigh-preview-canvas" width="360" height="180"></canvas>
+    </div>
+  </div>
+
+  <!-- ═══ VIEW: Photo of Santa ═══ -->
+  <div id="view-photo" class="hidden">
+    <div class="view-content view-narrow">
+      <h1 class="view-title">Photo of Santa</h1>
+      <p class="view-desc">Generate a picture of Santa's sleigh flying over your city, then download it!</p>
+      <label for="photo-city-input">Your City Name</label>
+      <input type="text" id="photo-city-input" placeholder="e.g. London">
+      <button type="button" id="photo-generate-btn" class="game-btn" style="margin-top:8px">Generate Photo</button>
+      <canvas id="photo-canvas" width="600" height="400" style="margin-top:12px;max-width:100%;border-radius:8px"></canvas>
+      <button type="button" id="photo-download-btn" class="game-btn hidden" style="margin-top:8px">Download PNG</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- ─── Game Modal ─── -->
+<div id="game-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-label="Mini-game">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2 id="game-modal-title">Mini-Game</h2>
+      <button type="button" id="game-modal-close" class="modal-close-btn" aria-label="Close">&times;</button>
+    </div>
+    <div id="game-area" class="game-area"></div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js"></script>
+<script type="module" src="map.js"></script>
+<script type="module" src="app.js"></script>
+</body>
+</html>

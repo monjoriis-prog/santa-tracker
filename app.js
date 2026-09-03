@@ -1,0 +1,475 @@
+/**
+ * app.js — Orchestrator for all views beyond the tracker:
+ *   Advent Calendar, Workshop Hub, Letter to Santa,
+ *   Nice List Check, Sleigh Customizer, Photo of Santa
+ */
+import { loadState, saveState } from "./storage.js";
+import { GAME_LIST, launchGame, abortActiveGame } from "./games.js";
+
+let state = loadState();
+
+/* ── Helpers ── */
+const $ = (id) => document.getElementById(id);
+const esc = (s) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+/* ── Navigation ── */
+const views = ["tracker", "advent", "workshop", "letter", "nicelist", "customizer", "photo"];
+
+function showView(id) {
+  // Kill any running game when switching views
+  abortActiveGame();
+  $("game-modal")?.classList.add("hidden");
+
+  for (const v of views) {
+    const el = $(`view-${v}`);
+    if (el) el.classList.toggle("hidden", v !== id);
+  }
+  document.querySelectorAll(".nav-btn").forEach((btn) => {
+    btn.classList.toggle("active", btn.dataset.view === id);
+  });
+  // Refresh view-specific content
+  if (id === "advent") renderAdvent();
+  if (id === "nicelist") refreshNiceList();
+  if (id === "customizer") refreshCustomizer();
+}
+
+document.querySelectorAll(".nav-btn").forEach((btn) => {
+  btn.addEventListener("click", () => showView(btn.dataset.view));
+});
+
+/* ═══════════════════════════════════════════
+   ADVENT CALENDAR
+   ═══════════════════════════════════════════ */
+const ADVENT_TREATS = [
+  "A candy cane for you!", "Here's a snowflake cookie!", "A tiny toy soldier!",
+  "Warm cocoa with marshmallows!", "A sparkly ornament!", "Jingle bells!",
+  "A gingerbread star!", "A little snow globe!", "Cinnamon sticks!",
+  "A holiday sticker!", "Peppermint drops!", "A paper snowflake pattern!",
+  "A mini wreath!", "Hot apple cider!", "A reindeer plushie!",
+  "Starlight wishes!", "A tiny drum!", "Sugar plum dreams!",
+  "A golden ribbon!", "A frosty treat!", "Holly berries!",
+  "A singing cardinal!", "Christmas tree seeds!", "A letter from Santa!",
+];
+
+function renderAdvent() {
+  const grid = $("advent-grid");
+  const devToggle = $("advent-dev-toggle");
+  if (!grid) return;
+  grid.innerHTML = "";
+  state = loadState();
+  const now = new Date();
+  const isDecember = now.getMonth() === 11;
+  const today = now.getDate();
+  const unlockAll = devToggle && devToggle.checked;
+
+  for (let day = 1; day <= 24; day++) {
+    const unlocked = unlockAll || (isDecember && day <= today);
+    const opened = !!state.doors[day];
+    const door = document.createElement("button");
+    door.type = "button";
+    door.className = "advent-door" + (opened ? " opened" : "") + (unlocked ? " unlocked" : " locked");
+    door.setAttribute("aria-label", `December ${day}${opened ? " (opened)" : unlocked ? "" : " (locked)"}`);
+
+    if (opened) {
+      door.innerHTML = `<span class="door-num">${day}</span><span class="door-treat">${ADVENT_TREATS[day - 1]}</span>`;
+    } else {
+      door.innerHTML = `<span class="door-num">${day}</span>`;
+      if (unlocked) {
+        door.addEventListener("click", () => openAdventDoor(day));
+      }
+    }
+    grid.append(door);
+  }
+}
+
+$("advent-dev-toggle")?.addEventListener("change", renderAdvent);
+
+function openAdventDoor(day) {
+  // Launch a mini-game in a modal
+  const modal = $("game-modal");
+  const gameArea = $("game-area");
+  const modalTitle = $("game-modal-title");
+  modal.classList.remove("hidden");
+  modalTitle.textContent = `December ${day} — Mini-Game!`;
+
+  launchGame(gameArea).then(({ game, score }) => {
+    // Record completion
+    state = loadState();
+    state.doors[day] = { game, score, ts: Date.now() };
+    if (!state.scores[game]) state.scores[game] = 0;
+    state.scores[game] = Math.max(state.scores[game], score);
+    saveState(state);
+    modal.classList.add("hidden");
+    renderAdvent();
+  });
+}
+
+// Modal close — abort running game so timers/sounds stop
+$("game-modal-close")?.addEventListener("click", () => {
+  abortActiveGame();
+  $("game-modal").classList.add("hidden");
+  $("game-area").innerHTML = "";
+});
+
+/* ═══════════════════════════════════════════
+   WORKSHOP HUB
+   ═══════════════════════════════════════════ */
+const WORKSHOP_BUILDINGS = [
+  { id: "unscramble", name: "Word Workshop", icon: "\uD83D\uDCDD", desc: "Unscramble Christmas words!" },
+  { id: "numberTarget", name: "Number Forge", icon: "\uD83D\uDD27", desc: "Hit the target number!" },
+  { id: "rhymeMatch", name: "Rhyme Stable", icon: "\uD83C\uDFB6", desc: "Match the rhyming words!" },
+];
+
+function renderWorkshop() {
+  const grid = $("workshop-grid");
+  if (!grid) return;
+  grid.innerHTML = "";
+  state = loadState();
+
+  for (const bldg of WORKSHOP_BUILDINGS) {
+    const card = document.createElement("button");
+    card.type = "button";
+    card.className = "workshop-building";
+    const best = state.scores[bldg.id] || 0;
+    card.innerHTML = `
+      <span class="building-icon">${bldg.icon}</span>
+      <span class="building-name">${bldg.name}</span>
+      <span class="building-desc">${bldg.desc}</span>
+      <span class="building-best">Best: ${best} pts</span>
+    `;
+    card.setAttribute("aria-label", `${bldg.name} — ${bldg.desc}`);
+    card.addEventListener("click", () => launchWorkshopGame(bldg.id));
+    grid.append(card);
+  }
+}
+
+function launchWorkshopGame(gameId) {
+  const modal = $("game-modal");
+  const gameArea = $("game-area");
+  const modalTitle = $("game-modal-title");
+  const bldg = WORKSHOP_BUILDINGS.find((b) => b.id === gameId);
+  modal.classList.remove("hidden");
+  modalTitle.textContent = bldg ? bldg.name : "Mini-Game";
+
+  launchGame(gameArea, gameId).then(({ game, score }) => {
+    state = loadState();
+    if (!state.scores[game]) state.scores[game] = 0;
+    state.scores[game] = Math.max(state.scores[game], score);
+    saveState(state);
+    modal.classList.add("hidden");
+    renderWorkshop();
+  });
+}
+
+/* ═══════════════════════════════════════════
+   LETTER TO SANTA
+   ═══════════════════════════════════════════ */
+$("letter-form")?.addEventListener("submit", (e) => {
+  e.preventDefault();
+  const name = $("letter-name").value.trim() || "Friend";
+  const wishes = $("letter-wishes").value.trim() || "Something wonderful";
+  const deed = $("letter-deed").value.trim() || "Being kind to everyone";
+
+  // Persist name globally + letter draft
+  state = loadState();
+  if (name && name !== "Friend") state.name = name;
+  state.letterDraft = { wishes, goodDeed: deed };
+  saveState(state);
+
+  // Update name across the app
+  updateNameDisplay();
+
+  // Render the decorated letter
+  const preview = $("letter-preview");
+  preview.classList.remove("hidden");
+  preview.innerHTML = `
+    <div class="letter-decorated">
+      <div class="letter-border">
+        <div class="letter-header">
+          <span class="letter-holly">\uD83C\uDF3F</span>
+          North Pole Mail
+          <span class="letter-holly">\uD83C\uDF3F</span>
+        </div>
+        <p class="letter-date">${new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}</p>
+        <p>Dear Santa,</p>
+        <p>My name is <strong>${esc(name)}</strong>.</p>
+        <p>This year, I really wish for: <em>${esc(wishes)}</em></p>
+        <p>A good deed I did this year: <em>${esc(deed)}</em></p>
+        <p>Thank you, Santa! I'll leave cookies and milk for you.</p>
+        <p class="letter-sign">With love,<br><strong>${esc(name)}</strong></p>
+        <div class="letter-stamp">\uD83C\uDF85</div>
+      </div>
+      <p class="letter-disclaimer">This letter stays right here on your device. Nothing is sent anywhere!</p>
+      <button type="button" class="game-btn" onclick="window.print()">Print My Letter</button>
+    </div>
+  `;
+});
+
+/* ═══════════════════════════════════════════
+   NICE LIST CHECK
+   ═══════════════════════════════════════════ */
+const NICE_VERDICTS = [
+  "Definitely on the Nice List! Santa is very impressed!",
+  "EXTRA nice! You might get bonus presents this year!",
+  "100% Nice List material! The elves are cheering!",
+  "So nice, even the reindeer are smiling!",
+  "Nice List confirmed! Santa gave a big thumbs up!",
+  "One of the nicest! Your kindness lights up the North Pole!",
+  "Nice List VIP! You get the golden star treatment!",
+  "Absolutely wonderful! Mrs. Claus baked you special cookies!",
+];
+
+function refreshNiceList() {
+  state = loadState();
+  const nameInput = $("nice-name-input");
+  if (nameInput && state.name) nameInput.value = state.name;
+}
+
+$("nice-check-btn")?.addEventListener("click", () => {
+  const nameInput = $("nice-name-input");
+  const name = nameInput.value.trim();
+  if (!name) { nameInput.focus(); return; }
+
+  // Save name
+  state = loadState();
+  state.name = name;
+  if (!state.niceListChecked.includes(name)) {
+    state.niceListChecked.push(name);
+  }
+  saveState(state);
+  updateNameDisplay();
+
+  // Animate the check
+  const resultDiv = $("nice-result");
+  const anim = $("nice-animation");
+  resultDiv.classList.add("hidden");
+  anim.classList.remove("hidden");
+  anim.innerHTML = '<div class="nice-spinner"></div><div class="nice-checking">Checking the list...</div>';
+
+  setTimeout(() => {
+    anim.innerHTML = '<div class="nice-spinner spin2"></div><div class="nice-checking">Checking it twice...</div>';
+  }, 1000);
+
+  setTimeout(() => {
+    anim.classList.add("hidden");
+    resultDiv.classList.remove("hidden");
+    const verdict = NICE_VERDICTS[Math.floor(Math.random() * NICE_VERDICTS.length)];
+    resultDiv.innerHTML = `
+      <div class="nice-result-card">
+        <div class="nice-star">\u2B50</div>
+        <div class="nice-name">${esc(name)}</div>
+        <div class="nice-verdict">${verdict}</div>
+        <div class="nice-badge">NICE LIST \u2713</div>
+      </div>
+    `;
+  }, 2200);
+});
+
+/* ═══════════════════════════════════════════
+   SLEIGH CUSTOMIZER
+   ═══════════════════════════════════════════ */
+function refreshCustomizer() {
+  state = loadState();
+  const colorInput = $("sleigh-color-input");
+  const nameInput = $("reindeer-name-input");
+  if (colorInput) colorInput.value = state.sleighColor || "#cc0000";
+  if (nameInput) nameInput.value = state.reindeerName || "Rudolph";
+  updateSleighPreview();
+}
+
+$("sleigh-color-input")?.addEventListener("input", (e) => {
+  state = loadState();
+  state.sleighColor = e.target.value;
+  saveState(state);
+  updateSleighPreview();
+  // Notify map.js
+  window.dispatchEvent(new CustomEvent("sleigh-updated", { detail: state }));
+});
+
+$("reindeer-name-input")?.addEventListener("input", (e) => {
+  state = loadState();
+  state.reindeerName = e.target.value.trim() || "Rudolph";
+  saveState(state);
+  updateSleighPreview();
+  window.dispatchEvent(new CustomEvent("sleigh-updated", { detail: state }));
+});
+
+/* ── Render sleigh.svg to canvas via recoloured SVG blob ── */
+// Store the fetch as a Promise so consumers can await it
+const sleighSvgReady = fetch("assets/sleigh.svg")
+  .then((r) => r.text())
+  .catch(() => null);
+
+/**
+ * Build a colourised SVG blob URL and draw it onto a canvas context.
+ * Waits for the SVG to be fetched if it hasn't arrived yet.
+ * Returns a Promise that resolves once the image is painted.
+ */
+async function drawSleighOnCanvas(ctx, x, y, scale, color, rName) {
+  const svgText = await sleighSvgReady;
+  if (!svgText) return;
+
+  // Recolour: replace .sleigh-body fill and .sleigh-scroll stroke
+  const svgStr = svgText
+    .replace(/(class="sleigh-body"[^>]*fill=")([^"]*)/g, `$1${color}`)
+    .replace(/(class="sleigh-scroll"[^>]*stroke=")([^"]*)/g, `$1${color}`);
+
+  const blob = new Blob([svgStr], { type: "image/svg+xml;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const w = 240 * scale;
+      const h = 110 * scale;
+      ctx.drawImage(img, x - w / 2, y - h / 2, w, h);
+      URL.revokeObjectURL(url);
+
+      // Reindeer name label below the rig
+      ctx.fillStyle = "#ffd700";
+      ctx.font = `bold ${Math.round(12 * scale)}px sans-serif`;
+      ctx.textAlign = "center";
+      ctx.fillText(rName, x - w * 0.25, y + h / 2 + 14 * scale);
+
+      resolve();
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); resolve(); };
+    img.src = url;
+  });
+}
+
+function updateSleighPreview() {
+  const canvas = $("sleigh-preview-canvas");
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d");
+  const w = canvas.width = 360;
+  const hh = canvas.height = 180;
+  ctx.clearRect(0, 0, w, hh);
+
+  const color = state.sleighColor || "#cc0000";
+  const rName = state.reindeerName || "Rudolph";
+
+  // Sky
+  ctx.fillStyle = "#0a0e27";
+  ctx.fillRect(0, 0, w, hh);
+
+  // Stars
+  for (let i = 0; i < 20; i++) {
+    ctx.fillStyle = `rgba(255,255,255,${Math.random() * 0.5 + 0.3})`;
+    ctx.beginPath();
+    ctx.arc(Math.random() * w, Math.random() * hh * 0.6, Math.random() + 0.5, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  drawSleighOnCanvas(ctx, w / 2, hh / 2 - 10, 1.2, color, rName);
+}
+
+/* ═══════════════════════════════════════════
+   PHOTO OF SANTA
+   ═══════════════════════════════════════════ */
+$("photo-generate-btn")?.addEventListener("click", generatePhoto);
+
+function generatePhoto() {
+  const cityName = $("photo-city-input").value.trim() || "My City";
+  const canvas = $("photo-canvas");
+  const ctx = canvas.getContext("2d");
+  const w = canvas.width = 600;
+  const hh = canvas.height = 400;
+
+  state = loadState();
+  const color = state.sleighColor || "#cc0000";
+  const rName = state.reindeerName || "Rudolph";
+
+  // Night sky gradient
+  const grad = ctx.createLinearGradient(0, 0, 0, hh);
+  grad.addColorStop(0, "#050a1a");
+  grad.addColorStop(0.6, "#0a1440");
+  grad.addColorStop(1, "#141e50");
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, w, hh);
+
+  // Stars
+  for (let i = 0; i < 80; i++) {
+    const sx = Math.random() * w;
+    const sy = Math.random() * hh * 0.55;
+    const sr = Math.random() * 1.5 + 0.5;
+    ctx.fillStyle = `rgba(255,255,255,${Math.random() * 0.6 + 0.2})`;
+    ctx.beginPath(); ctx.arc(sx, sy, sr, 0, Math.PI * 2); ctx.fill();
+  }
+
+  // Moon
+  ctx.fillStyle = "#ffe680";
+  ctx.beginPath(); ctx.arc(w - 80, 60, 30, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = "#050a1a";
+  ctx.beginPath(); ctx.arc(w - 68, 52, 28, 0, Math.PI * 2); ctx.fill();
+
+  // Skyline — procedural buildings
+  const skylineY = hh * 0.6;
+  ctx.fillStyle = "#0a0f2e";
+  const buildingCount = 18;
+  for (let i = 0; i < buildingCount; i++) {
+    const bx = (w / buildingCount) * i;
+    const bw = w / buildingCount + 4;
+    const bh = 40 + Math.random() * 100;
+    ctx.fillRect(bx, skylineY - bh, bw, bh + 200);
+    // Windows
+    ctx.fillStyle = "rgba(255,200,50,0.6)";
+    for (let wy = skylineY - bh + 8; wy < skylineY - 4; wy += 14) {
+      for (let wx = bx + 4; wx < bx + bw - 4; wx += 10) {
+        if (Math.random() > 0.3) ctx.fillRect(wx, wy, 5, 7);
+      }
+    }
+    ctx.fillStyle = "#0a0f2e";
+  }
+
+  // Snow ground
+  ctx.fillStyle = "#c8d8f0";
+  ctx.fillRect(0, skylineY + 10, w, hh - skylineY);
+  // Snow bumps
+  ctx.fillStyle = "#dce8f8";
+  for (let i = 0; i < 8; i++) {
+    ctx.beginPath();
+    ctx.ellipse(Math.random() * w, skylineY + 15 + Math.random() * 20, 40 + Math.random() * 30, 10, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // Sleigh in the sky (async — draw city name after it loads)
+  drawSleighOnCanvas(ctx, w * 0.45, hh * 0.2, 1.4, color, rName).then(() => {
+    // City name
+    ctx.fillStyle = "#ffd700";
+    ctx.font = "bold 28px 'Segoe UI', sans-serif";
+    ctx.textAlign = "center";
+    ctx.shadowColor = "rgba(0,0,0,0.5)";
+    ctx.shadowBlur = 6;
+    ctx.fillText(`Christmas Eve over ${cityName}`, w / 2, hh - 30);
+    ctx.shadowBlur = 0;
+
+    // Download button
+    const dlBtn = $("photo-download-btn");
+    dlBtn.classList.remove("hidden");
+    dlBtn.onclick = () => {
+      const link = document.createElement("a");
+      link.download = `santa-over-${cityName.replace(/\s+/g, "-").toLowerCase()}.png`;
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    };
+  });
+}
+
+/* ═══════════════════════════════════════════
+   NAME DISPLAY (used in greeting and panels)
+   ═══════════════════════════════════════════ */
+function updateNameDisplay() {
+  state = loadState();
+  const greeting = $("user-greeting");
+  if (greeting) {
+    greeting.textContent = state.name ? `Hi, ${state.name}!` : "";
+  }
+}
+
+/* ═══════════════════════════════════════════
+   INIT
+   ═══════════════════════════════════════════ */
+renderWorkshop();
+updateNameDisplay();
+showView("tracker");
