@@ -105,24 +105,38 @@ function snowflakeCelebration() {
 }
 
 /* ── 1. Word Unscramble ── */
-const XMAS_WORDS = [
+const XMAS_WORDS_EASY = [
+  "snow", "star", "bell", "gift", "tree", "hat", "toy", "sled",
+  "wish", "card", "sing", "cold", "wrap", "bow", "elf", "joy",
+];
+const XMAS_WORDS_MEDIUM = [
+  "santa", "candy", "angel", "frost", "sleigh", "merry", "jingle",
+  "holly", "light", "carol", "north", "cheer", "flake", "globe",
+  "scarf", "cocoa", "magic", "comet",
+];
+const XMAS_WORDS_HARD = [
   "snowflake", "reindeer", "chimney", "stocking", "present", "tinsel",
-  "gingerbread", "mistletoe", "ornament", "snowman", "caroling", "wreath",
-  "nutcracker", "evergreen", "sleighbell", "icicle", "blizzard", "mittens",
-  "fireplace", "eggnog", "peppermint", "fruitcake", "candycane", "workshop",
-  "toymaker", "starlight", "jingle", "garland", "holiday", "festive",
+  "gingerbread", "mistletoe", "ornament", "nutcracker", "evergreen",
+  "blizzard", "peppermint", "fruitcake", "candycane", "fireplace",
 ];
 
-export function wordUnscramble(container) {
+const WORD_LEVELS = {
+  beginner:  { words: XMAS_WORDS_EASY,   rounds: 5, maxWrong: 5, label: "Beginner" },
+  moderate:  { words: XMAS_WORDS_MEDIUM, rounds: 5, maxWrong: 3, label: "Moderate" },
+  advanced:  { words: XMAS_WORDS_HARD,   rounds: 5, maxWrong: 3, label: "Advanced" },
+};
+
+export function wordUnscramble(container, level) {
   return new Promise((resolve) => {
     abortActiveGame();
     const signal = createAbortSignal();
     activeAbort = signal;
     container.innerHTML = "";
+    const cfg = WORD_LEVELS[level] || WORD_LEVELS.beginner;
     let score = 0;
     let round = 0;
-    const maxRounds = 5;
-    const MAX_WRONG = 3;
+    const maxRounds = cfg.rounds;
+    const MAX_WRONG = cfg.maxWrong;
     let done = false;
 
     function skip() {
@@ -135,7 +149,7 @@ export function wordUnscramble(container) {
       if (signal.aborted || done) return;
       if (round >= maxRounds) { finish(); return; }
       container.innerHTML = "";
-      const word = pick(XMAS_WORDS);
+      const word = pick(cfg.words);
       let scrambled = shuffle(word.split("")).join("");
       while (scrambled === word && word.length > 1) scrambled = shuffle(word.split("")).join("");
       round++;
@@ -236,15 +250,37 @@ export function wordUnscramble(container) {
 }
 
 /* ── 2. Number Target ── */
-export function numberTarget(container) {
+const NUM_LEVELS = {
+  beginner:  { numCount: 2, maxNum: 6,  ops: ["+", "-"],            rounds: 3, label: "Beginner" },
+  moderate:  { numCount: 3, maxNum: 9,  ops: ["+", "-", "*"],       rounds: 3, label: "Moderate" },
+  advanced:  { numCount: 4, maxNum: 12, ops: ["+", "-", "*", "/"],  rounds: 3, label: "Advanced" },
+};
+
+function generateTargetForLevel(nums, ops) {
+  for (let attempt = 0; attempt < 200; attempt++) {
+    const perm = shuffle(nums);
+    const chosen = [];
+    for (let i = 0; i < perm.length - 1; i++) chosen.push(pick(ops));
+    let expr = String(perm[0]);
+    for (let i = 0; i < chosen.length; i++) expr += ` ${chosen[i]} ${perm[i + 1]}`;
+    try {
+      const val = Function(`"use strict"; return (${expr})`)();
+      if (Number.isInteger(val) && val > 0 && val < 200) return val;
+    } catch { /* skip */ }
+  }
+  return nums[0] + nums[1];
+}
+
+export function numberTarget(container, level) {
   return new Promise((resolve) => {
     abortActiveGame();
     const signal = createAbortSignal();
     activeAbort = signal;
     container.innerHTML = "";
+    const cfg = NUM_LEVELS[level] || NUM_LEVELS.beginner;
     let score = 0;
     let round = 0;
-    const maxRounds = 3;
+    const maxRounds = cfg.rounds;
     let done = false;
 
     function skip() {
@@ -259,13 +295,14 @@ export function numberTarget(container) {
       container.innerHTML = "";
       round++;
 
-      const nums = Array.from({ length: 4 }, () => Math.floor(Math.random() * 12) + 1);
-      const target = generateTarget(nums);
+      const nums = Array.from({ length: cfg.numCount }, () => Math.floor(Math.random() * cfg.maxNum) + 1);
+      const target = generateTargetForLevel(nums, cfg.ops);
 
-      const title = h("div", { class: "game-round" }, `Round ${round}/${maxRounds}`);
+      const opsDisplay = cfg.ops.map(o => o === "*" ? "\u00D7" : o === "/" ? "\u00F7" : o === "-" ? "\u2212" : o).join(" ");
+      const title = h("div", { class: "game-round" }, `Round ${round}/${maxRounds} \u2022 ${cfg.label}`);
       const prompt = h("div", { class: "game-prompt" },
-        `Make ${target} using: ${nums.join(", ")}  (+ \u2212 \u00D7 \u00F7)`);
-      const hint = h("div", { class: "game-hint" }, "Type an expression like: 3 + 5 * 2 - 1");
+        `Make ${target} using: ${nums.join(", ")}  (${opsDisplay})`);
+      const hint = h("div", { class: "game-hint" }, cfg.numCount === 2 ? "Type an expression like: 3 + 5" : "Type an expression like: 3 + 5 * 2");
       const input = h("input", { type: "text", class: "game-input", placeholder: "e.g. 3 + 5 * 2", autocomplete: "off" });
       const btnRow = h("div", { class: "game-btn-row" });
       const btn = h("button", { type: "button", class: "game-btn" }, "Submit");
@@ -351,20 +388,6 @@ export function numberTarget(container) {
 
     nextRound();
   });
-}
-
-function generateTarget(nums) {
-  // Try random expressions to find a reachable integer target
-  const ops = ["+", "-", "*"];
-  for (let attempt = 0; attempt < 100; attempt++) {
-    const perm = shuffle(nums);
-    const op1 = pick(ops), op2 = pick(ops), op3 = pick(ops);
-    try {
-      const val = Function(`"use strict"; return (${perm[0]} ${op1} ${perm[1]} ${op2} ${perm[2]} ${op3} ${perm[3]})`)();
-      if (Number.isInteger(val) && val > 0 && val < 200) return val;
-    } catch { /* skip */ }
-  }
-  return nums[0] + nums[1]; // fallback
 }
 
 /* ── 3. Rhyme Match ── */
@@ -485,14 +508,44 @@ export function rhymeMatch(container) {
 
 /** Launch a random game, or a specific one by name */
 export const GAME_LIST = [
-  { id: "unscramble", name: "Word Unscramble", fn: wordUnscramble, icon: "\uD83D\uDD24" },
-  { id: "numberTarget", name: "Number Target", fn: numberTarget, icon: "\uD83D\uDD22" },
-  { id: "rhymeMatch", name: "Rhyme Match", fn: rhymeMatch, icon: "\uD83C\uDFB5" },
+  { id: "unscramble", name: "Word Unscramble", fn: wordUnscramble, hasLevels: true, icon: "\uD83D\uDD24" },
+  { id: "numberTarget", name: "Number Target", fn: numberTarget, hasLevels: true, icon: "\uD83D\uDD22" },
+  { id: "rhymeMatch", name: "Rhyme Match", fn: rhymeMatch, hasLevels: false, icon: "\uD83C\uDFB5" },
 ];
 
-export function launchGame(container, gameId) {
+const LEVEL_OPTIONS = [
+  { id: "beginner",  label: "Beginner",  desc: "Short words, small numbers", emoji: "\uD83C\uDF1F" },
+  { id: "moderate",  label: "Moderate",  desc: "Medium challenge",           emoji: "\u2B50" },
+  { id: "advanced",  label: "Advanced",  desc: "Long words, big numbers",    emoji: "\uD83C\uDF1F\uD83C\uDF1F" },
+];
+
+function showLevelPicker(container, gameName) {
+  return new Promise((resolve) => {
+    container.innerHTML = "";
+    const title = h("div", { class: "game-prompt" }, `Pick a level for ${gameName}`);
+    const grid = h("div", { class: "level-picker" });
+    container.append(title, grid);
+
+    for (const lvl of LEVEL_OPTIONS) {
+      const btn = h("button", { type: "button", class: "level-btn", "data-sound": "click" },
+        `${lvl.emoji} ${lvl.label}`);
+      const desc = h("div", { class: "level-desc" }, lvl.desc);
+      const wrap = h("div", { class: "level-option" });
+      wrap.append(btn, desc);
+      btn.addEventListener("click", () => resolve(lvl.id));
+      grid.append(wrap);
+    }
+  });
+}
+
+export async function launchGame(container, gameId) {
   const game = gameId
     ? GAME_LIST.find((g) => g.id === gameId)
     : pick(GAME_LIST);
-  return game.fn(container);
+
+  let level = null;
+  if (game.hasLevels) {
+    level = await showLevelPicker(container, game.name);
+  }
+  return game.fn(container, level);
 }

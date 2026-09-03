@@ -347,6 +347,16 @@ label{display:block;font-size:.85rem;color:#8899bb;margin:8px 0 4px}
 .game-skip-btn{background:transparent;border:1px solid var(--border);color:#8899bb;font-weight:400;font-size:.8rem}
 .game-skip-btn:hover{background:var(--border);color:var(--text)}
 
+/* Level picker */
+.level-picker{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+.level-option{display:flex;flex-direction:column;align-items:stretch}
+.level-btn{
+  background:var(--border);color:var(--text);padding:14px 20px;border-radius:10px;
+  font-size:1rem;font-weight:600;text-align:left;transition:background .15s;
+}
+.level-btn:hover{background:#2a3a7a}
+.level-desc{font-size:.75rem;color:#667;margin:2px 0 0 4px}
+
 /* ═══ Sound control ═══ */
 .snd-control{
   display:inline-flex;align-items:center;gap:8px;
