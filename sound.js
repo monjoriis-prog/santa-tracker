@@ -261,11 +261,8 @@
       if (!fn) return;
       var c = ensureCtx();
       if (!c) return;
-      if (c.state === 'suspended') {
-        c.resume().then(function () { try { fn(); } catch (e) {} });
-      } else {
-        try { fn(); } catch (e) {}
-      }
+      if (c.state === 'suspended') c.resume();
+      try { fn(); } catch (e) {}
     },
     isEnabled: function () { return enabled; },
     setEnabled: function (on) {
