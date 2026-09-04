@@ -64,15 +64,18 @@
     return ctx;
   }
 
-  // The first gesture of any kind unlocks audio. Listeners remove themselves.
-  // Safari macOS needs 'mousedown'/'click'; iOS needs 'touchstart'.
-  var UNLOCK_EVENTS = ['pointerdown', 'mousedown', 'touchstart', 'keydown', 'click'];
+  // Unlock audio on first user gesture. iOS requires a special path:
+  //   - AudioContext must be created inside a touchend handler
+  //   - A silent buffer must actually play through it (resume alone is not enough)
+  //   - The listener must be on document.body, not window
+  // Desktop browsers are less strict — mousedown/keydown on document.body works fine.
+
   function unlock() {
     if (unlocked) return;
     var c = ensureCtx();
     if (!c) return;
     if (c.state === 'suspended') c.resume();
-    // Safari sometimes needs a tiny silent buffer played during the gesture
+    // iOS keeps the context muted until a buffer has actually played during a gesture
     try {
       var b = c.createBuffer(1, 1, c.sampleRate);
       var s = c.createBufferSource();
@@ -82,11 +85,15 @@
     } catch (e) {}
     unlocked = true;
     UNLOCK_EVENTS.forEach(function (evt) {
-      global.removeEventListener(evt, unlock, true);
+      document.body.removeEventListener(evt, unlock, true);
     });
   }
+
+  // touchend is the reliable gesture event on iOS; pointerdown is not.
+  // mousedown, click, and keydown cover desktop browsers.
+  var UNLOCK_EVENTS = ['touchend', 'mousedown', 'click', 'keydown'];
   UNLOCK_EVENTS.forEach(function (evt) {
-    global.addEventListener(evt, unlock, true);
+    document.body.addEventListener(evt, unlock, true);
   });
 
   function tone(opts) {
