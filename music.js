@@ -160,15 +160,14 @@
     play: function () {
       var c = ensureCtx();
       if (!c || playing) return;
+      // iOS: silent HTML audio switches audio session to "playback"
+      try { new Audio("data:audio/wav;base64,UklGRiYAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQIAAAAAAA==").play().catch(function(){}); } catch(e){}
       if (c.state === 'suspended') c.resume();
-      // iOS needs a silent buffer to actually play before the context unmutes
-      try {
-        var b = c.createBuffer(1, 1, c.sampleRate);
-        var s = c.createBufferSource();
-        s.buffer = b;
-        s.connect(c.destination);
-        s.start(0);
-      } catch (e) {}
+      var b = c.createBuffer(1, 1, c.sampleRate);
+      var src = c.createBufferSource();
+      src.buffer = b;
+      src.connect(c.destination);
+      src.start(0);
       playing = true;
       noteIndex = 0;
       beatCounter = 0;

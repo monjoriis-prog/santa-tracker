@@ -64,37 +64,40 @@
     return ctx;
   }
 
-  // Unlock audio on first user gesture. iOS requires a special path:
-  //   - AudioContext must be created inside a touchend handler
-  //   - A silent buffer must actually play through it (resume alone is not enough)
-  //   - The listener must be on document.body, not window
-  // Desktop browsers are less strict — mousedown/keydown on document.body works fine.
+  // iOS AUDIO UNLOCK
+  // iOS WebKit blocks ALL audio (Web Audio + HTML Audio) until a
+  // real user gesture plays something.  A silent <audio> element
+  // switches the audio session to "playback" (ignoring the mute
+  // switch), and a silent Web Audio buffer unlocks the oscillator
+  // path.  We do both, on every tap, until the context is running.
+
+  // Tiny silent WAV, base64 — 44 bytes header + 1 sample of silence.
+  var silentWav = "data:audio/wav;base64,UklGRiYAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQIAAAAAAA==";
+  var silentAudio = new Audio(silentWav);
 
   function unlock() {
-    if (unlocked) return;
+    // 1. Play a silent HTML <audio> — sets iOS audio session to "playback".
+    silentAudio.play().catch(function () {});
+
+    // 2. Create (or resume) Web Audio context and play a silent buffer.
     var c = ensureCtx();
     if (!c) return;
     if (c.state === 'suspended') c.resume();
-    // iOS keeps the context muted until a buffer has actually played during a gesture
-    try {
-      var b = c.createBuffer(1, 1, c.sampleRate);
-      var s = c.createBufferSource();
-      s.buffer = b;
-      s.connect(c.destination);
-      s.start(0);
-    } catch (e) {}
-    unlocked = true;
-    UNLOCK_EVENTS.forEach(function (evt) {
-      document.body.removeEventListener(evt, unlock, true);
-    });
-  }
+    var b = c.createBuffer(1, 1, c.sampleRate);
+    var s = c.createBufferSource();
+    s.buffer = b;
+    s.connect(c.destination);
+    s.start(0);
 
-  // touchend is the reliable gesture event on iOS; pointerdown is not.
-  // mousedown, click, and keydown cover desktop browsers.
-  var UNLOCK_EVENTS = ['touchend', 'mousedown', 'click', 'keydown'];
-  UNLOCK_EVENTS.forEach(function (evt) {
-    document.body.addEventListener(evt, unlock, true);
-  });
+    // Only remove listeners once the context is actually running.
+    if (c.state === 'running') {
+      unlocked = true;
+      document.removeEventListener('touchend', unlock, true);
+      document.removeEventListener('click', unlock, true);
+    }
+  }
+  document.addEventListener('touchend', unlock, true);
+  document.addEventListener('click', unlock, true);
 
   function tone(opts) {
     var c = ensureCtx();
