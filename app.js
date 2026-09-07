@@ -6,6 +6,7 @@
 import { loadState, saveState } from "./storage.js";
 import { GAME_LIST, launchGame, abortActiveGame } from "./games.js";
 import { sleighSvgReady } from "./sleigh-loader.js";
+import { CHARACTERS, ADVENT_CSS, renderCharacter } from "./advent-characters.js";
 
 let state = loadState();
 
@@ -39,72 +40,130 @@ document.querySelectorAll(".nav-btn").forEach((btn) => {
 });
 
 /* ═══════════════════════════════════════════
-   ADVENT CALENDAR
+   ADVENT CALENDAR  — character collectibles
    ═══════════════════════════════════════════ */
-const ADVENT_TREATS = [
-  "A candy cane for you!", "Here's a snowflake cookie!", "A tiny toy soldier!",
-  "Warm cocoa with marshmallows!", "A sparkly ornament!", "Jingle bells!",
-  "A gingerbread star!", "A little snow globe!", "Cinnamon sticks!",
-  "A holiday sticker!", "Peppermint drops!", "A paper snowflake pattern!",
-  "A mini wreath!", "Hot apple cider!", "A reindeer plushie!",
-  "Starlight wishes!", "A tiny drum!", "Sugar plum dreams!",
-  "A golden ribbon!", "A frosty treat!", "Holly berries!",
-  "A singing cardinal!", "Christmas tree seeds!", "A letter from Santa!",
-];
+
+// Inject character animation CSS once
+{
+  const s = document.createElement("style");
+  s.textContent = ADVENT_CSS;
+  document.head.appendChild(s);
+}
+
+let showingCollection = false;
 
 function renderAdvent() {
   const grid = $("advent-grid");
-  const devToggle = $("advent-dev-toggle");
   if (!grid) return;
   grid.innerHTML = "";
   state = loadState();
-  const now = new Date();
-  const isDecember = now.getMonth() === 11;
-  const today = now.getDate();
-  const unlockAll = devToggle && devToggle.checked;
+
+  if (showingCollection) {
+    renderCollection(grid);
+    return;
+  }
 
   for (let day = 1; day <= 24; day++) {
-    const unlocked = unlockAll || (isDecember && day <= today);
+    const ch = CHARACTERS[day - 1];
     const opened = !!state.doors[day];
     const door = document.createElement("button");
     door.type = "button";
-    door.className = "advent-door" + (opened ? " opened" : "") + (unlocked ? " unlocked" : " locked");
-    door.setAttribute("aria-label", `December ${day}${opened ? " (opened)" : unlocked ? "" : " (locked)"}`);
+    door.className = "advent-door unlocked" + (opened ? " opened" : "");
+    door.setAttribute("aria-label", `Door ${day} — ${ch.name}${opened ? " (opened)" : ""}`);
 
     if (opened) {
-      door.innerHTML = `<span class="door-num">${day}</span><span class="door-treat">${ADVENT_TREATS[day - 1]}</span>`;
+      const svg = renderCharacter(ch.id, "56px");
+      door.appendChild(svg);
+      const nameEl = document.createElement("span");
+      nameEl.className = "door-char-name";
+      nameEl.textContent = ch.name;
+      door.appendChild(nameEl);
     } else {
       door.innerHTML = `<span class="door-num">${day}</span>`;
-      if (unlocked) {
-        door.setAttribute("data-sound", "open");
-        door.addEventListener("click", () => openAdventDoor(day));
-      }
+      door.setAttribute("data-sound", "open");
+      door.addEventListener("click", () => openAdventDoor(day));
     }
     grid.append(door);
   }
 }
 
-$("advent-dev-toggle")?.addEventListener("change", renderAdvent);
-
 function openAdventDoor(day) {
-  // Launch a mini-game in a modal
+  const ch = CHARACTERS[day - 1];
+
+  // Record
+  state = loadState();
+  state.doors[day] = { character: ch.id, ts: Date.now() };
+  saveState(state);
+
+  // Show character in modal
   const modal = $("game-modal");
   const gameArea = $("game-area");
   const modalTitle = $("game-modal-title");
   modal.classList.remove("hidden");
-  modalTitle.textContent = `December ${day} — Mini-Game!`;
+  modalTitle.textContent = `Door ${day}`;
 
-  launchGame(gameArea).then(({ game, score }) => {
-    // Record completion
-    state = loadState();
-    state.doors[day] = { game, score, ts: Date.now() };
-    if (!state.scores[game]) state.scores[game] = 0;
-    state.scores[game] = Math.max(state.scores[game], score);
-    saveState(state);
-    modal.classList.add("hidden");
-    renderAdvent();
-  });
+  gameArea.innerHTML = "";
+  const wrap = document.createElement("div");
+  wrap.className = "advent-reveal";
+  const svg = renderCharacter(ch.id, "140px");
+  wrap.appendChild(svg);
+  const name = document.createElement("div");
+  name.className = "advent-reveal-name";
+  name.textContent = ch.name;
+  wrap.appendChild(name);
+  gameArea.appendChild(wrap);
+
+  // Celebration effect
+  if (typeof window.santaSound?.play === "function") window.santaSound.play("celebrate");
+  spawnCelebration();
+
+  renderAdvent();
 }
+
+function spawnCelebration() {
+  const overlay = document.createElement("div");
+  overlay.className = "snowflake-overlay";
+  document.body.appendChild(overlay);
+  const symbols = ["\u2744", "\u2728", "\u2B50", "\u2764"];
+  for (let i = 0; i < 30; i++) {
+    const p = document.createElement("span");
+    p.className = "snowflake-particle";
+    p.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+    p.style.left = Math.random() * 100 + "%";
+    p.style.fontSize = (Math.random() * 18 + 14) + "px";
+    p.style.animationDuration = (Math.random() * 1.5 + 1.5) + "s";
+    p.style.animationDelay = (Math.random() * 0.6) + "s";
+    overlay.appendChild(p);
+  }
+  setTimeout(() => overlay.remove(), 3000);
+}
+
+function renderCollection(grid) {
+  grid.className = "collection-grid";
+  for (let i = 0; i < 24; i++) {
+    const ch = CHARACTERS[i];
+    const cell = document.createElement("div");
+    cell.className = "collection-cell";
+    const svg = renderCharacter(ch.id, "72px");
+    cell.appendChild(svg);
+    const label = document.createElement("div");
+    label.className = "collection-name";
+    label.textContent = ch.name;
+    cell.appendChild(label);
+    grid.appendChild(cell);
+  }
+}
+
+$("advent-collection-btn")?.addEventListener("click", () => {
+  showingCollection = !showingCollection;
+  const btn = $("advent-collection-btn");
+  if (btn) btn.textContent = showingCollection ? "Back to Calendar" : "My Collection";
+  const grid = $("advent-grid");
+  if (grid) {
+    grid.className = showingCollection ? "collection-grid" : "advent-grid";
+  }
+  renderAdvent();
+});
 
 // Modal close — abort running game so timers/sounds stop
 $("game-modal-close")?.addEventListener("click", () => {

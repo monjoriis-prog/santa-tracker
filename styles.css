@@ -234,6 +234,25 @@ label{display:block;font-size:.85rem;color:var(--ink-soft);margin:8px 0 4px}
 }
 .advent-door.opened .door-num{font-size:1rem;color:var(--teal)}
 .advent-door .door-treat{font-size:.6rem;color:var(--ink-soft);text-align:center;margin-top:2px;line-height:1.2}
+.advent-door.opened{padding:4px}
+.advent-door .door-char-name{font-size:.55rem;color:var(--teal);margin-top:2px;text-align:center;line-height:1.1}
+
+/* Character reveal inside modal */
+.advent-reveal{display:flex;flex-direction:column;align-items:center;padding:20px 0}
+.advent-reveal-name{font-size:1.4rem;font-weight:800;color:var(--amber);margin-top:12px;text-align:center}
+
+/* Collection grid */
+.collection-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(90px,1fr));
+  gap:12px;
+}
+.collection-cell{
+  display:flex;flex-direction:column;align-items:center;
+  padding:10px 4px;border-radius:14px;border:2px solid var(--border);
+  background:transparent;
+}
+.collection-name{font-size:.7rem;color:var(--ink);margin-top:4px;text-align:center;font-weight:600}
 
 /* ═══ Workshop Hub ═══ */
 .workshop-grid{
