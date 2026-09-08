@@ -7,12 +7,13 @@ let state = loadState();
 
 const routeTimes = ROUTE.map((s) => new Date(s.arrive).getTime());
 
+const GIFT_SCALE = 16.89;
 const cumulativeGifts = [];
 {
   let sum = 0;
   for (const stop of ROUTE) {
     sum += stop.gifts;
-    cumulativeGifts.push(sum);
+    cumulativeGifts.push(Math.round(sum * GIFT_SCALE));
   }
 }
 
@@ -112,6 +113,11 @@ const gStops = [
 
 const overlayRect = overlayG.append("rect");
 
+/* Antarctica mask — keeps the continent dark regardless of delivered state */
+const antarcticaMaskG = g.insert("g", ":nth-child(3)").style("pointer-events", "none");
+const antarcticaMask = antarcticaMaskG.append("rect")
+  .attr("fill", "rgba(5,8,25,0.45)");
+
 /* Boundary glow — soft vertical line at Santa's longitude */
 const boundaryLine = boundaryG.append("rect")
   .attr("fill", "rgba(255,210,80,0.25)")
@@ -130,6 +136,12 @@ function resize() {
   overlayRect.attr("x", 0).attr("y", 0).attr("width", width).attr("height", height)
     .attr("fill", "url(#overlay-grad)");
   clipRect.attr("y", 0).attr("height", height);
+
+  const antarcticaY = projection([0, -60]);
+  if (antarcticaY) {
+    antarcticaMask.attr("x", 0).attr("y", antarcticaY[1])
+      .attr("width", width).attr("height", height - antarcticaY[1]);
+  }
 
   if (window._countries) renderCountries(window._countries);
   renderStars();
@@ -174,6 +186,7 @@ function renderCityDots() {
   litDotsG.selectAll("*").remove();
 
   CITIES.forEach(([lng, lat]) => {
+    if (lat < -60) return;
     const p = projection([lng, lat]);
     if (!p) return;
     dimDotsG.append("circle")
@@ -274,12 +287,11 @@ function getSantaState(simNow) {
     };
   }
   if (simNow >= times[times.length - 1]) {
-    const last = ROUTE[ROUTE.length - 1];
     return {
       phase: "done",
       stopIdx: ROUTE.length - 1,
-      lat: last.lat,
-      lng: last.lng,
+      lat: 84,
+      lng: 0,
       t: 1,
       times,
     };
@@ -352,7 +364,7 @@ function getGiftsDelivered(st) {
   const completed = st.stopIdx >= 0 ? cumulativeGifts[st.stopIdx] : 0;
   const legGifts =
     st.stopIdx < ROUTE.length - 1
-      ? Math.round(ROUTE[st.nextIdx].gifts * st.t)
+      ? Math.round(ROUTE[st.nextIdx].gifts * GIFT_SCALE * st.t)
       : 0;
   return Math.floor(completed + legGifts);
 }
@@ -486,7 +498,7 @@ function updateSanta() {
     setText("status-text", "Pre-Flight");
     setText("status-sub", "Takes off in " + formatDuration(st.countdown));
     setText("current-city", "North Pole");
-    setText("current-fact", "Final preparations underway!");
+    setText("current-fact", "Loading the sleigh…");
     setHtml("current-weather", "");
     setText("next-city", ROUTE[0].name);
     setText("next-eta", formatDuration(st.countdown));
@@ -518,11 +530,11 @@ function updateSanta() {
     const last = ROUTE[ROUTE.length - 1];
     setText("status-text", "Journey Complete!");
     setText("status-sub", "Merry Christmas!");
-    setText("current-city", last.name);
-    setText("current-fact", last.fact);
+    setText("current-city", "North Pole");
+    setText("current-fact", "Back home, safe and sound!");
     setHtml("current-weather", "");
-    setText("next-city", "North Pole");
-    setText("next-eta", "Heading home!");
+    setText("next-city", `Last delivery: ${last.name}`);
+    setText("next-eta", "—");
     targetGifts = cumulativeGifts[cumulativeGifts.length - 1];
     setText("gift-sub", "All stops visited!");
     const totalDist = Math.round(cumulativeDistance[cumulativeDistance.length - 1]);
