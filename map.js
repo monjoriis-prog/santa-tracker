@@ -280,8 +280,8 @@ function getSantaState(simNow) {
       phase: "before",
       countdown: times[0] - simNow,
       stopIdx: -1,
-      lat: ROUTE[0].lat,
-      lng: ROUTE[0].lng,
+      lat: 84,
+      lng: 0,
       t: 0,
       times,
     };
@@ -315,7 +315,7 @@ function getSantaState(simNow) {
       };
     }
   }
-  return { phase: "before", countdown: 0, stopIdx: -1, lat: ROUTE[0].lat, lng: ROUTE[0].lng, t: 0, times };
+  return { phase: "before", countdown: 0, stopIdx: -1, lat: 84, lng: 0, t: 0, times };
 }
 
 function isChristmasSeason(now) {
@@ -486,7 +486,7 @@ function updateSanta() {
     setText("next-eta", "On Christmas Eve!");
     setText("gift-count", "0");
     setText("gift-sub", "Loading the sleigh…");
-    updateLocalTimePanel(realNow, ROUTE[0].lng);
+    updateLocalTimePanel(realNow, 0);
     setText("distance-val", "0 km");
     setText("speed-val", "0 km/h");
     return;
@@ -705,6 +705,8 @@ d3.json("assets/vendor/countries-110m.json")
   });
 
 window.addEventListener("resize", resize);
+
+setText("countdown-first-stop", `First stop: ${ROUTE[0].name}`);
 
 /* ── Main loop ── */
 function tick() {
