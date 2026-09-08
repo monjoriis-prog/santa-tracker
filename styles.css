@@ -77,7 +77,10 @@ label{display:block;font-size:.85rem;color:var(--ink-soft);margin:8px 0 4px}
   padding:8px 12px;background:var(--header);border-bottom:1px solid rgba(240,230,210,.08);
   flex-wrap:wrap;
 }
-.nav-title{font-weight:800;color:var(--logo);font-size:1.1rem;margin-right:8px}
+.nav-title{display:flex;flex-direction:column;line-height:1;margin-right:8px}
+.nav-title-main{font-family:Georgia,"Times New Roman",serif;font-weight:700;font-size:25px;color:#FFD277}
+.nav-title-sub{font-size:11px;text-transform:uppercase;letter-spacing:.16em;color:#9FB4D4;margin-top:5px}
+@media(max-width:480px){.nav-title-main{font-size:20px}.nav-title-sub{font-size:9px}}
 .nav-greeting{font-size:.85rem;color:var(--ink-soft);margin-right:auto}
 .nav-links{display:flex;gap:4px;flex-wrap:wrap}
 .nav-btn{
