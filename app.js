@@ -319,7 +319,7 @@ $("nice-check-btn")?.addEventListener("click", () => {
   anim.innerHTML = '<div class="nice-spinner"></div><div class="nice-checking">Checking the list...</div>';
 
   setTimeout(() => {
-    anim.innerHTML = '<div class="nice-spinner spin2"></div><div class="nice-checking">Checking it twice...</div>';
+    anim.innerHTML = '<div class="nice-spinner spin2"></div><div class="nice-checking">Double-checking the list...</div>';
   }, 1000);
 
   setTimeout(() => {

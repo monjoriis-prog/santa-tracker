@@ -6,7 +6,7 @@ const defaults = Object.freeze({
   scores: {},
   sound: true,
   sleighColor: "#cc0000",
-  reindeerName: "Rudolph",
+  reindeerName: "Comet",
   niceListChecked: [],
   letterDraft: { wishes: "", goodDeed: "" },
 });

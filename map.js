@@ -480,7 +480,7 @@ function updateSanta() {
     setText("status-text", "Parked at North Pole");
     setText("status-sub", "Waiting for Christmas Eve");
     setText("current-city", "North Pole");
-    setText("current-fact", "Santa is feeding the reindeer and checking his list twice!");
+    setText("current-fact", "The reindeer are being fed and the list is being double-checked.");
     setHtml("current-weather", "");
     setText("next-city", ROUTE[0].name);
     setText("next-eta", "On Christmas Eve!");
