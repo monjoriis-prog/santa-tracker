@@ -233,8 +233,6 @@ function renderStopMarkers() {
 }
 
 /* ── Santa SVG from external asset ── */
-let reindeerLabel = null;
-
 sleighSvgReady.then((svgText) => {
     if (!svgText) return;
     const parser = new DOMParser();
@@ -244,16 +242,6 @@ sleighSvgReady.then((svgText) => {
     const imported = document.importNode(rig, true);
     santaG.node().appendChild(imported);
     applySleighColor(state.sleighColor || "#cc0000");
-    reindeerLabel = santaG.append("text")
-      .attr("x", 50).attr("y", 100)
-      .attr("text-anchor", "middle")
-      .attr("fill", "#ffd700")
-      .attr("font-size", "22px")
-      .attr("font-weight", "bold")
-      .attr("paint-order", "stroke")
-      .attr("stroke", "#0a0e27")
-      .attr("stroke-width", "3px")
-      .text(state.reindeerName || "Santa");
   })
   .catch((err) => console.warn("Could not load sleigh.svg, falling back to dot:", err));
 
@@ -266,7 +254,6 @@ function applySleighColor(color) {
 window.addEventListener("sleigh-updated", () => {
   state = loadState();
   applySleighColor(state.sleighColor || "#cc0000");
-  if (reindeerLabel) reindeerLabel.text(state.reindeerName || "Santa");
 });
 
 /* ── Timing / state ── */
@@ -511,9 +498,8 @@ function updateSanta() {
     const next = ROUTE[st.nextIdx];
     const eta = st.times[st.nextIdx] - simNow;
 
-    const rName = state.reindeerName || "Santa";
     setText("status-text", "In Flight");
-    setText("status-sub", `${rName} leading the way between ${prev.name} and ${next.name}`);
+    setText("status-sub", `En route from ${prev.name} to ${next.name}`);
     setText("current-city", prev.name);
     setText("current-fact", prev.fact);
     setHtml("current-weather", "");
