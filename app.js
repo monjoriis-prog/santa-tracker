@@ -15,7 +15,7 @@ const $ = (id) => document.getElementById(id);
 const esc = (s) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
 /* ── Navigation ── */
-const views = ["tracker", "advent", "workshop", "letter", "nicelist", "customizer"];
+const views = ["tracker", "advent", "workshop", "letter", "nicelist", "customizer", "about"];
 
 function showView(id) {
   // Kill any running game when switching views
