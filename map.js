@@ -240,7 +240,7 @@ sleighSvgReady.then((svgText) => {
       .attr("paint-order", "stroke")
       .attr("stroke", "#0a0e27")
       .attr("stroke-width", "3px")
-      .text(state.reindeerName || "Rudolph");
+      .text(state.reindeerName || "Santa");
   })
   .catch((err) => console.warn("Could not load sleigh.svg, falling back to dot:", err));
 
@@ -253,7 +253,7 @@ function applySleighColor(color) {
 window.addEventListener("sleigh-updated", () => {
   state = loadState();
   applySleighColor(state.sleighColor || "#cc0000");
-  if (reindeerLabel) reindeerLabel.text(state.reindeerName || "Rudolph");
+  if (reindeerLabel) reindeerLabel.text(state.reindeerName || "Santa");
 });
 
 /* ── Timing / state ── */
@@ -499,7 +499,7 @@ function updateSanta() {
     const next = ROUTE[st.nextIdx];
     const eta = st.times[st.nextIdx] - simNow;
 
-    const rName = state.reindeerName || "Rudolph";
+    const rName = state.reindeerName || "Santa";
     setText("status-text", "In Flight");
     setText("status-sub", `${rName} leading the way between ${prev.name} and ${next.name}`);
     setText("current-city", prev.name);

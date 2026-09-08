@@ -345,7 +345,7 @@ function refreshCustomizer() {
   const colorInput = $("sleigh-color-input");
   const nameInput = $("reindeer-name-input");
   if (colorInput) colorInput.value = state.sleighColor || "#cc0000";
-  if (nameInput) nameInput.value = state.reindeerName || "Rudolph";
+  if (nameInput) nameInput.value = state.reindeerName || "Santa";
   updateSleighPreview();
 }
 
@@ -360,7 +360,7 @@ $("sleigh-color-input")?.addEventListener("input", (e) => {
 
 $("reindeer-name-input")?.addEventListener("input", (e) => {
   state = loadState();
-  state.reindeerName = e.target.value.trim() || "Rudolph";
+  state.reindeerName = e.target.value.trim() || "Santa";
   saveState(state);
   updateSleighPreview();
   window.dispatchEvent(new CustomEvent("sleigh-updated", { detail: state }));
@@ -414,7 +414,7 @@ function updateSleighPreview() {
   ctx.clearRect(0, 0, w, hh);
 
   const color = state.sleighColor || "#cc0000";
-  const rName = state.reindeerName || "Rudolph";
+  const rName = state.reindeerName || "Santa";
 
   // Sky
   ctx.fillStyle = "#0a0e27";
