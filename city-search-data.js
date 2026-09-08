@@ -1,0 +1,160 @@
+// Searchable city names mapped to [latitude, longitude].
+// Used by the city search so kids can look up their hometown
+// and see whether Santa has reached them yet.
+
+export const SEARCHABLE_CITIES = {
+  // ── United States ──
+  "new york":[40.71,-74.01],"los angeles":[34.05,-118.24],"chicago":[41.88,-87.63],
+  "houston":[29.76,-95.37],"phoenix":[33.45,-112.07],"philadelphia":[39.95,-75.17],
+  "san antonio":[29.42,-98.49],"san diego":[32.72,-117.16],"dallas":[32.78,-96.80],
+  "san jose":[37.34,-121.89],"austin":[30.27,-97.74],"jacksonville":[30.33,-81.66],
+  "fort worth":[32.73,-97.32],"columbus":[39.96,-83.00],"charlotte":[35.23,-80.84],
+  "san francisco":[37.77,-122.42],"indianapolis":[39.77,-86.16],"seattle":[47.61,-122.33],
+  "denver":[39.74,-104.99],"washington dc":[38.90,-77.04],"washington":[38.90,-77.04],
+  "nashville":[36.16,-86.78],"oklahoma city":[35.47,-97.52],"el paso":[31.77,-106.44],
+  "boston":[42.36,-71.06],"portland":[45.51,-122.68],"las vegas":[36.17,-115.14],
+  "memphis":[35.15,-90.05],"louisville":[38.25,-85.76],"baltimore":[39.29,-76.61],
+  "milwaukee":[43.04,-87.91],"albuquerque":[35.08,-106.65],"tucson":[32.22,-110.93],
+  "fresno":[36.75,-119.77],"mesa":[33.42,-111.83],"sacramento":[38.58,-121.49],
+  "atlanta":[33.75,-84.39],"kansas city":[39.10,-94.58],"colorado springs":[38.83,-104.82],
+  "omaha":[41.26,-95.94],"raleigh":[35.77,-78.64],"miami":[25.77,-80.19],
+  "cleveland":[41.50,-81.69],"tampa":[27.95,-82.46],"tulsa":[36.15,-95.99],
+  "aurora":[39.73,-104.83],"new orleans":[29.95,-90.08],"bakersfield":[35.37,-119.02],
+  "honolulu":[21.31,-157.86],"anaheim":[33.84,-117.91],"santa ana":[33.75,-117.87],
+  "pittsburgh":[40.44,-79.99],"cincinnati":[39.10,-84.51],"detroit":[42.33,-83.05],
+  "minneapolis":[44.98,-93.26],"st louis":[38.63,-90.20],"orlando":[28.54,-81.38],
+  "st paul":[44.95,-93.09],"buffalo":[42.89,-78.88],"richmond":[37.55,-77.46],
+  "salt lake city":[40.76,-111.89],"norfolk":[36.85,-76.29],"birmingham":[33.52,-86.80],
+  "rochester":[43.16,-77.62],"boise":[43.62,-116.20],"des moines":[41.60,-93.61],
+  "spokane":[47.66,-117.43],"charleston":[32.78,-79.93],"little rock":[34.75,-92.29],
+  "anchorage":[61.22,-149.90],"knoxville":[35.96,-83.92],"chattanooga":[35.05,-85.31],
+  "madison":[43.07,-89.40],"savannah":[32.08,-81.10],"dayton":[39.76,-84.19],
+  "jackson":[32.30,-90.18],"tallahassee":[30.44,-84.28],"mobile":[30.69,-88.04],
+  "springfield":[39.80,-89.64],"lexington":[38.05,-84.46],"reno":[39.53,-119.81],
+  "lincoln":[40.80,-96.67],"baton rouge":[30.44,-91.19],"lubbock":[33.58,-101.86],
+  "providence":[41.82,-71.41],"hartford":[41.76,-72.69],"akron":[41.08,-81.52],
+  "montgomery":[32.37,-86.30],"sioux falls":[43.55,-96.70],"fargo":[46.88,-96.79],
+  "laredo":[27.51,-99.51],"corpus christi":[27.80,-97.40],
+  "huntsville":[34.73,-86.59],"topeka":[39.05,-95.68],"wichita":[37.69,-97.34],
+  "pensacola":[30.43,-87.22],"erie":[42.13,-80.09],
+
+  // New York State
+  "albany":[42.65,-73.76],"syracuse":[43.05,-76.15],"ithaca":[42.44,-76.50],
+  "binghamton":[42.10,-75.91],"utica":[43.10,-75.23],"schenectady":[42.81,-73.94],
+  "niagara falls":[43.09,-79.06],"plattsburgh":[44.70,-73.45],
+  "watertown":[43.97,-75.91],"oneida":[43.08,-75.65],"cortland":[42.60,-76.18],
+  "oswego":[43.46,-76.51],"auburn":[42.93,-76.57],"canandaigua":[42.89,-77.28],
+  "saratoga springs":[43.08,-73.78],"kingston":[41.93,-73.99],
+  "poughkeepsie":[41.70,-73.92],"troy":[42.73,-73.69],"newburgh":[41.50,-74.01],
+  "white plains":[41.03,-73.77],"yonkers":[40.93,-73.90],"new rochelle":[40.91,-73.78],
+  "glen cove":[40.86,-73.63],"long island":[40.79,-73.13],
+
+  // ── Canada ──
+  "toronto":[43.70,-79.42],"montreal":[45.51,-73.59],"vancouver":[49.25,-123.12],
+  "calgary":[51.05,-114.09],"edmonton":[53.55,-113.47],"ottawa":[45.41,-75.70],
+  "winnipeg":[49.88,-97.15],"quebec city":[46.81,-71.21],"hamilton":[43.25,-79.87],
+  "halifax":[44.65,-63.57],"victoria":[48.44,-123.35],"london ontario":[42.98,-81.23],
+  "saskatoon":[52.13,-106.67],"regina":[50.45,-104.62],"st johns":[47.56,-52.71],
+  "kelowna":[49.88,-119.49],"thunder bay":[48.38,-89.25],"sudbury":[46.49,-80.99],
+  "fredericton":[45.96,-66.65],"charlottetown":[46.24,-63.13],"moncton":[46.10,-64.80],
+  "whitehorse":[60.72,-135.05],"yellowknife":[62.45,-114.37],
+  "prince george":[53.92,-122.75],"lethbridge":[49.69,-112.83],
+  "kamloops":[50.67,-120.33],"nanaimo":[49.17,-123.94],
+  "red deer":[52.27,-113.81],"medicine hat":[50.04,-110.68],
+  "grande prairie":[55.17,-118.80],"sault ste marie":[46.52,-84.35],
+  "brandon":[49.84,-99.95],"corner brook":[48.95,-57.95],
+  "prince rupert":[54.32,-130.32],
+
+  // ── Mexico ──
+  "mexico city":[19.43,-99.13],"guadalajara":[20.67,-103.39],"monterrey":[25.68,-100.32],
+  "puebla":[19.04,-98.20],"tijuana":[32.53,-117.02],"cancun":[21.17,-86.85],
+  "merida":[20.97,-89.62],"leon":[21.13,-101.67],"queretaro":[20.59,-100.39],
+
+  // ── United Kingdom & Ireland ──
+  "london":[51.51,-0.13],"manchester":[53.48,-2.24],"birmingham uk":[52.48,-1.90],
+  "liverpool":[53.41,-2.98],"edinburgh":[55.95,-3.19],"glasgow":[55.87,-4.26],
+  "bristol":[51.46,-2.60],"leeds":[53.80,-1.55],"sheffield":[53.38,-1.47],
+  "cardiff":[51.48,-3.18],"belfast":[54.60,-5.93],"dublin":[53.33,-6.25],
+  "cork":[51.90,-8.47],"oxford":[51.75,-1.26],"cambridge":[52.21,0.12],
+  "york":[53.96,-1.08],"bath":[51.38,-2.36],"brighton":[50.82,-0.14],
+  "nottingham":[52.95,-1.15],"newcastle":[54.98,-1.62],"aberdeen":[57.15,-2.09],
+  "inverness":[57.48,-4.22],"coventry":[52.41,-1.51],
+
+  // ── Europe ──
+  "paris":[48.86,2.35],"berlin":[52.52,13.41],"madrid":[40.42,-3.70],
+  "rome":[41.89,12.51],"amsterdam":[52.37,4.89],"brussels":[50.85,4.35],
+  "vienna":[48.21,16.37],"prague":[50.09,14.42],"warsaw":[52.23,21.01],
+  "lisbon":[38.72,-9.14],"barcelona":[41.39,2.17],"munich":[48.14,11.58],
+  "milan":[45.46,9.19],"stockholm":[59.33,18.07],"copenhagen":[55.68,12.57],
+  "oslo":[59.91,10.75],"helsinki":[60.17,24.94],"budapest":[47.50,19.04],
+  "zurich":[47.38,8.54],"geneva":[46.20,6.14],"athens":[37.98,23.73],
+  "bucharest":[44.43,26.11],"sofia":[42.70,23.32],"belgrade":[44.80,20.47],
+  "zagreb":[45.81,15.98],"bratislava":[48.15,17.11],"tallinn":[59.44,24.75],
+  "riga":[56.95,24.11],"vilnius":[54.69,25.28],"reykjavik":[64.15,-21.95],
+  "naples":[40.85,14.27],"hamburg":[53.55,9.99],"frankfurt":[50.11,8.68],
+  "cologne":[50.94,6.96],"lyon":[45.76,4.84],"marseille":[43.30,5.38],
+  "toulouse":[43.60,1.44],"nice":[43.71,7.27],"seville":[37.39,-5.98],
+  "valencia":[39.47,-0.38],"florence":[43.77,11.25],"venice":[45.44,12.34],
+  "porto":[41.15,-8.61],"krakow":[50.06,19.94],"gdansk":[54.35,18.65],
+  "dubrovnik":[42.65,18.09],"sarajevo":[43.85,18.36],
+
+  // ── Russia ──
+  "moscow":[55.76,37.62],"st petersburg":[59.93,30.32],
+
+  // ── Asia ──
+  "tokyo":[35.68,139.69],"beijing":[39.91,116.40],"shanghai":[31.22,121.47],
+  "mumbai":[19.08,72.88],"delhi":[28.65,77.23],"bangkok":[13.75,100.50],
+  "singapore":[1.29,103.85],"seoul":[37.57,126.98],"hong kong":[22.28,114.17],
+  "taipei":[25.05,121.53],"manila":[14.60,120.98],"jakarta":[- 6.21,106.85],
+  "kuala lumpur":[3.14,101.69],"dubai":[25.20,55.27],"abu dhabi":[24.45,54.40],
+  "istanbul":[41.01,28.95],"hanoi":[21.02,105.84],"ho chi minh city":[10.82,106.63],
+  "osaka":[34.69,135.50],"kyoto":[35.01,135.77],"kolkata":[22.57,88.36],
+  "chennai":[13.08,80.28],"bangalore":[12.97,77.59],"hyderabad":[17.38,78.47],
+  "karachi":[24.86,67.01],"lahore":[31.56,74.35],"islamabad":[33.69,73.04],
+  "dhaka":[23.71,90.41],"colombo":[6.93,79.85],"kathmandu":[27.70,85.32],
+  "tehran":[35.69,51.42],"riyadh":[24.69,46.72],"jeddah":[21.49,39.19],
+  "doha":[25.29,51.53],"muscat":[23.59,58.41],
+  "phnom penh":[11.56,104.92],"yangon":[16.81,96.16],
+
+  // ── Australia & New Zealand ──
+  "sydney":[-33.87,151.21],"melbourne":[-37.81,144.96],"brisbane":[-27.47,153.03],
+  "perth":[-31.95,115.86],"adelaide":[-34.93,138.60],"canberra":[-35.28,149.13],
+  "hobart":[-42.88,147.33],"darwin":[-12.46,130.84],"cairns":[-16.92,145.77],
+  "gold coast":[-28.00,153.43],"townsville":[-19.26,146.79],
+  "alice springs":[-23.70,133.88],"newcastle":[-32.93,151.78],
+  "wollongong":[-34.42,150.89],"geelong":[-38.15,144.35],
+  "launceston":[-41.44,147.14],"toowoomba":[-27.56,151.95],
+  "rockhampton":[-23.38,150.51],"mackay":[-21.14,149.19],
+  "auckland":[-36.85,174.76],"wellington":[-41.29,174.78],
+  "christchurch":[-43.53,172.64],"queenstown":[-45.03,168.66],
+  "dunedin":[-45.87,170.50],"hamilton nz":[-37.78,175.28],
+
+  // ── South America ──
+  "sao paulo":[-23.55,-46.64],"rio de janeiro":[-22.91,-43.18],
+  "buenos aires":[-34.61,-58.38],"bogota":[4.61,-74.08],
+  "lima":[-12.04,-77.03],"santiago":[-33.46,-70.65],"caracas":[10.49,-66.88],
+  "quito":[-0.23,-78.52],"montevideo":[-34.91,-56.19],"la paz":[-16.50,-68.15],
+  "brasilia":[-15.78,-47.93],"medellin":[6.25,-75.56],"cartagena":[10.40,-75.51],
+  "cusco":[-13.53,-71.97],"guayaquil":[-2.20,-79.89],
+
+  // ── Africa ──
+  "cairo":[30.04,31.24],"lagos":[6.45,3.39],"nairobi":[-1.28,36.82],
+  "cape town":[-33.93,18.42],"johannesburg":[-26.20,28.04],
+  "casablanca":[33.59,-7.61],"accra":[5.56,-0.20],"addis ababa":[9.02,38.75],
+  "dar es salaam":[-6.82,39.27],"marrakech":[31.63,-8.00],
+  "tunis":[36.82,10.17],"algiers":[36.77,3.06],"dakar":[14.69,-17.44],
+  "kinshasa":[-4.33,15.31],"luanda":[-8.84,13.23],"kampala":[0.32,32.58],
+  "abuja":[9.06,7.49],"durban":[-29.86,30.03],"pretoria":[-25.74,28.19],
+  "kigali":[-1.95,30.06],"maputo":[-25.97,32.58],
+
+  // ── Caribbean & Central America ──
+  "havana":[23.13,-82.38],"san juan":[18.47,-66.12],"kingston":[18.00,-76.79],
+  "nassau":[25.06,-77.35],"port au prince":[18.54,-72.34],
+  "panama city":[8.98,-79.52],"san jose cr":[9.93,-84.08],
+  "guatemala city":[14.64,-90.51],"managua":[12.13,-86.25],
+  "tegucigalpa":[14.08,-87.21],"san salvador":[13.69,-89.19],
+
+  // ── Pacific ──
+  "suva":[-18.14,178.44],"port moresby":[-9.44,147.18],
+  "noumea":[-22.28,166.46],"papeete":[-17.53,-149.57],
+};

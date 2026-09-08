@@ -2,6 +2,7 @@ import { loadState } from "./storage.js";
 import { sleighSvgReady } from "./sleigh-loader.js";
 import { ROUTE } from "./route.js";
 import { CITIES } from "./cities.js";
+import { SEARCHABLE_CITIES } from "./city-search-data.js";
 
 let state = loadState();
 
@@ -602,37 +603,26 @@ function fuzzyScore(query, target) {
   return qi === q.length ? score : 0;
 }
 
-const KNOWN_LOCATIONS = {
-  "ithaca":[42.44,-76.50],"binghamton":[42.10,-75.91],"utica":[43.10,-75.23],
-  "albany":[42.65,-73.76],"buffalo":[42.89,-78.88],"schenectady":[42.81,-73.94],
-  "niagara falls":[43.09,-79.06],"plattsburgh":[44.70,-73.45],
-  "watertown":[43.97,-75.91],"oneida":[43.08,-75.65],"cortland":[42.60,-76.18],
-  "oswego":[43.46,-76.51],"auburn":[42.93,-76.57],"canandaigua":[42.89,-77.28],
-  "saratoga springs":[43.08,-73.78],"kingston":[41.93,-73.99],
-  "philadelphia":[39.95,-75.17],"boston":[42.36,-71.06],"pittsburgh":[40.44,-79.99],
-  "detroit":[42.33,-83.05],"cleveland":[41.50,-81.69],"baltimore":[39.29,-76.61],
-  "atlanta":[33.75,-84.39],"miami":[25.76,-80.19],"denver":[39.74,-104.99],
-  "seattle":[47.61,-122.33],"san francisco":[37.77,-122.42],"portland":[45.51,-122.68],
-  "dallas":[32.78,-96.80],"phoenix":[33.45,-112.07],"minneapolis":[44.98,-93.27],
-  "st louis":[38.63,-90.20],"nashville":[36.16,-86.78],"orlando":[28.54,-81.38],
-  "london":[51.51,-0.13],"paris":[48.86,2.35],"berlin":[52.52,13.41],
-  "tokyo":[35.68,139.69],"sydney":[-33.87,151.21],"mumbai":[19.08,72.88],
-};
-
-function nearestStop(query) {
-  const q = query.toLowerCase().trim();
-  const coords = KNOWN_LOCATIONS[q];
-  if (!coords) return null;
+function nearestStop(lat, lng) {
   let best = null;
   let bestDist = Infinity;
   for (const stop of ROUTE) {
-    const d = haversineKm(coords[0], coords[1], stop.lat, stop.lng);
+    const d = haversineKm(lat, lng, stop.lat, stop.lng);
     if (d < bestDist) {
       bestDist = d;
       best = stop;
     }
   }
   return best;
+}
+
+function findCity(query) {
+  const q = query.toLowerCase().trim();
+  if (SEARCHABLE_CITIES[q]) return { name: q, coords: SEARCHABLE_CITIES[q] };
+  for (const [name, coords] of Object.entries(SEARCHABLE_CITIES)) {
+    if (name.includes(q) || q.includes(name)) return { name, coords };
+  }
+  return null;
 }
 
 function doSearch() {
@@ -666,16 +656,33 @@ function doSearch() {
         `<span style="color:var(--blue)">Santa will arrive at <strong>${match.name}</strong> in about <strong>${formatDuration(eta)}</strong>!</span>` +
         `<br><span class="fun-fact">${match.fact}</span>`;
     }
-  } else {
-    const nearest = nearestStop(q);
-    if (nearest) {
-      result.innerHTML =
-        `<span style="color:var(--gold)">"${q}" isn't on Santa's route, but the nearest stop is <strong>${nearest.name}</strong>!</span>` +
-        `<br><span class="fun-fact">${nearest.fact}</span>`;
-    } else {
-      result.innerHTML = `<span style="color:var(--gold)">That city isn't on Santa's route this year, but he'll still find you!</span>`;
-    }
+    return;
   }
+
+  const city = findCity(q);
+  if (city) {
+    const [lat, lng] = city.coords;
+    const displayName = city.name.replace(/\b\w/g, c => c.toUpperCase());
+    const closest = nearestStop(lat, lng);
+    const arriveTime = new Date(closest.arrive).getTime() + yearOffset;
+
+    if (simNow >= arriveTime) {
+      result.innerHTML =
+        `<span style="color:var(--green)">Santa has delivered to <strong>${displayName}</strong>! ` +
+        `The nearest route stop was <strong>${closest.name}</strong>.</span>` +
+        `<br><span class="fun-fact">${closest.fact}</span>`;
+    } else {
+      const eta = arriveTime - simNow;
+      result.innerHTML =
+        `<span style="color:var(--blue)">Santa is on his way to <strong>${displayName}</strong>! ` +
+        `He'll be near there in about <strong>${formatDuration(eta)}</strong> ` +
+        `(stopping at <strong>${closest.name}</strong>).</span>` +
+        `<br><span class="fun-fact">${closest.fact}</span>`;
+    }
+    return;
+  }
+
+  result.innerHTML = `<span style="color:var(--gold)">We couldn't find "${q}", but don't worry — Santa knows where everyone lives!</span>`;
 }
 
 /* ── Load map data ── */
