@@ -619,10 +619,15 @@ function nearestStop(lat, lng) {
 function findCity(query) {
   const q = query.toLowerCase().trim();
   if (SEARCHABLE_CITIES[q]) return { name: q, coords: SEARCHABLE_CITIES[q] };
+  let best = null;
   for (const [name, coords] of Object.entries(SEARCHABLE_CITIES)) {
-    if (name.includes(q) || q.includes(name)) return { name, coords };
+    if (name.startsWith(q) || q.startsWith(name)) {
+      if (!best || name.length < best.name.length) best = { name, coords };
+    } else if (!best && (name.includes(q) || q.includes(name))) {
+      best = { name, coords };
+    }
   }
-  return null;
+  return best;
 }
 
 function doSearch() {
