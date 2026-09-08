@@ -154,6 +154,22 @@ const ROUTE = [
     fact: "The river is dyed green every St. Patrick's Day.",
     weather: { condition: "Freezing", icon: "\uD83C\uDF28\uFE0F", tempC: -8, tempF: 18 },
     arrive: "2024-12-24T22:40:00Z" },
+  { name: "Rochester, NY", lat: 43.16, lng: -77.61, pop: 0.21,
+    fact: "Where photographic film was invented.",
+    weather: { condition: "Heavy snow", icon: "\uD83C\uDF28\uFE0F", tempC: -6, tempF: 21 },
+    arrive: "2024-12-24T22:46:00Z" },
+  { name: "Syracuse, NY", lat: 43.05, lng: -76.15, pop: 0.15,
+    fact: "Gets around 10 feet of snow a year, more than almost any other city in America.",
+    weather: { condition: "Blizzard", icon: "\uD83C\uDF28\uFE0F", tempC: -7, tempF: 19 },
+    arrive: "2024-12-24T22:50:00Z" },
+  { name: "Fayetteville, NY", lat: 43.03, lng: -76.01, pop: 0.004,
+    fact: "Sits beside the old Erie Canal, which carried boats long before there were trains.",
+    weather: { condition: "Snow flurries", icon: "\uD83C\uDF28\uFE0F", tempC: -5, tempF: 23 },
+    arrive: "2024-12-24T22:53:00Z" },
+  { name: "Manlius, NY", lat: 43.00, lng: -75.98, pop: 0.005,
+    fact: "Has a swan pond right in the middle of the village.",
+    weather: { condition: "Light snow", icon: "\uD83C\uDF28\uFE0F", tempC: -5, tempF: 23 },
+    arrive: "2024-12-24T22:56:00Z" },
   { name: "New York, USA", lat: 40.71, lng: -74.01, pop: 20.14,
     fact: "Times Square is named after The New York Times, not the other way around.",
     weather: { condition: "Light snow", icon: "\uD83C\uDF28\uFE0F", tempC: -2, tempF: 28 },
@@ -713,17 +729,34 @@ function fuzzyScore(query, target) {
   return qi === q.length ? score : 0;
 }
 
+/* Known locations for geocoding search queries that aren't on the route */
+const KNOWN_LOCATIONS = {
+  "ithaca":[42.44,-76.50],"binghamton":[42.10,-75.91],"utica":[43.10,-75.23],
+  "albany":[42.65,-73.76],"buffalo":[42.89,-78.88],"schenectady":[42.81,-73.94],
+  "niagara falls":[43.09,-79.06],"plattsburgh":[44.70,-73.45],
+  "watertown":[43.97,-75.91],"oneida":[43.08,-75.65],"cortland":[42.60,-76.18],
+  "oswego":[43.46,-76.51],"auburn":[42.93,-76.57],"canandaigua":[42.89,-77.28],
+  "saratoga springs":[43.08,-73.78],"kingston":[41.93,-73.99],
+  "philadelphia":[39.95,-75.17],"boston":[42.36,-71.06],"pittsburgh":[40.44,-79.99],
+  "detroit":[42.33,-83.05],"cleveland":[41.50,-81.69],"baltimore":[39.29,-76.61],
+  "atlanta":[33.75,-84.39],"miami":[25.76,-80.19],"denver":[39.74,-104.99],
+  "seattle":[47.61,-122.33],"san francisco":[37.77,-122.42],"portland":[45.51,-122.68],
+  "dallas":[32.78,-96.80],"phoenix":[33.45,-112.07],"minneapolis":[44.98,-93.27],
+  "st louis":[38.63,-90.20],"nashville":[36.16,-86.78],"orlando":[28.54,-81.38],
+  "london":[51.51,-0.13],"paris":[48.86,2.35],"berlin":[52.52,13.41],
+  "tokyo":[35.68,139.69],"sydney":[-33.87,151.21],"mumbai":[19.08,72.88],
+};
+
 function nearestStop(query) {
-  // Interpret query as possible lat/lng? No — find nearest stop by name distance.
-  // Actually, find the stop whose name is closest alphabetically — but the spec says
-  // "nearest stop by distance". Since we don't know the kid's location, find the
-  // stop with the best fuzzy score, or if truly zero matches, return the first stop.
+  const q = query.toLowerCase().trim();
+  const coords = KNOWN_LOCATIONS[q];
+  if (!coords) return null;
   let best = null;
-  let bestScore = -1;
+  let bestDist = Infinity;
   for (const stop of ROUTE) {
-    const s = fuzzyScore(query, stop.name);
-    if (s > bestScore) {
-      bestScore = s;
+    const d = haversineKm(coords[0], coords[1], stop.lat, stop.lng);
+    if (d < bestDist) {
+      bestDist = d;
       best = stop;
     }
   }
