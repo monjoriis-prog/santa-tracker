@@ -1,217 +1,21 @@
 import { loadState } from "./storage.js";
 import { sleighSvgReady } from "./sleigh-loader.js";
+import { ROUTE } from "./route.js";
+import { CITIES } from "./cities.js";
 
 let state = loadState();
 
-/* ───────────────────────────────────────────
-   Route: ~42 stops, east → west from date line
-   Each stop: name, lat, lng, fact, weather
-   (condition, tempC, tempF), population (millions,
-   rough metro — drives gift count)
-   ─────────────────────────────────────────── */
-const ROUTE = [
-  { name: "Apia, Samoa", lat: -13.83, lng: -171.76, pop: 0.04,
-    fact: "First country to see each new day thanks to the date line!",
-    weather: { condition: "Warm rain", icon: "\u{1F327}", tempC: 28, tempF: 82 },
-    arrive: "2024-12-24T05:00:00Z" },
-  { name: "Auckland, New Zealand", lat: -36.85, lng: 174.76, pop: 1.66,
-    fact: "Known as the City of Sails with more boats per capita than anywhere.",
-    weather: { condition: "Sunny", icon: "\u2600\uFE0F", tempC: 22, tempF: 72 },
-    arrive: "2024-12-24T05:30:00Z" },
-  { name: "Wellington, New Zealand", lat: -41.29, lng: 174.78, pop: 0.42,
-    fact: "The world's southernmost capital of a sovereign state.",
-    weather: { condition: "Windy", icon: "\uD83C\uDF2C\uFE0F", tempC: 18, tempF: 64 },
-    arrive: "2024-12-24T05:50:00Z" },
-  { name: "Sydney, Australia", lat: -33.87, lng: 151.21, pop: 5.3,
-    fact: "The Opera House roof weighs over 161,000 tonnes!",
-    weather: { condition: "Sunny", icon: "\u2600\uFE0F", tempC: 26, tempF: 79 },
-    arrive: "2024-12-24T06:20:00Z" },
-  { name: "Melbourne, Australia", lat: -37.81, lng: 144.96, pop: 5.1,
-    fact: "Has the world's largest tram network.",
-    weather: { condition: "Partly cloudy", icon: "\u26C5", tempC: 24, tempF: 75 },
-    arrive: "2024-12-24T06:50:00Z" },
-  { name: "Tokyo, Japan", lat: 35.68, lng: 139.69, pop: 13.96,
-    fact: "Tokyo's subway pushers help squeeze 8 million daily riders onto trains!",
-    weather: { condition: "Cold & clear", icon: "\u2744\uFE0F", tempC: 5, tempF: 41 },
-    arrive: "2024-12-24T07:30:00Z" },
-  { name: "Seoul, South Korea", lat: 37.57, lng: 126.98, pop: 9.74,
-    fact: "Has more Wi-Fi hotspots per person than any other city.",
-    weather: { condition: "Snow flurries", icon: "\uD83C\uDF28\uFE0F", tempC: -3, tempF: 27 },
-    arrive: "2024-12-24T08:00:00Z" },
-  { name: "Beijing, China", lat: 39.90, lng: 116.40, pop: 21.54,
-    fact: "The Forbidden City has exactly 9,999 rooms!",
-    weather: { condition: "Cold & dry", icon: "\u2744\uFE0F", tempC: -4, tempF: 25 },
-    arrive: "2024-12-24T08:30:00Z" },
-  { name: "Hong Kong", lat: 22.32, lng: 114.17, pop: 7.5,
-    fact: "Has more skyscrapers than any other city on Earth.",
-    weather: { condition: "Mild", icon: "\u26C5", tempC: 18, tempF: 64 },
-    arrive: "2024-12-24T09:00:00Z" },
-  { name: "Manila, Philippines", lat: 14.60, lng: 120.98, pop: 13.92,
-    fact: "Filipinos start celebrating Christmas in September!",
-    weather: { condition: "Warm & humid", icon: "\uD83C\uDF24\uFE0F", tempC: 28, tempF: 82 },
-    arrive: "2024-12-24T09:30:00Z" },
-  { name: "Bangkok, Thailand", lat: 13.76, lng: 100.50, pop: 10.72,
-    fact: "Bangkok's full ceremonial name is 168 letters long.",
-    weather: { condition: "Hot", icon: "\u2600\uFE0F", tempC: 31, tempF: 88 },
-    arrive: "2024-12-24T10:00:00Z" },
-  { name: "Kolkata, India", lat: 22.57, lng: 88.36, pop: 14.85,
-    fact: "Home to the largest cricket stadium in the world.",
-    weather: { condition: "Cool fog", icon: "\uD83C\uDF2B\uFE0F", tempC: 15, tempF: 59 },
-    arrive: "2024-12-24T10:40:00Z" },
-  { name: "Mumbai, India", lat: 19.08, lng: 72.88, pop: 20.67,
-    fact: "The dabbawalas deliver 200,000 lunches daily with almost zero errors.",
-    weather: { condition: "Warm", icon: "\u2600\uFE0F", tempC: 27, tempF: 81 },
-    arrive: "2024-12-24T11:10:00Z" },
-  { name: "Dubai, UAE", lat: 25.20, lng: 55.27, pop: 3.5,
-    fact: "The Burj Khalifa is so tall you can watch two sunsets from it.",
-    weather: { condition: "Clear & warm", icon: "\u2600\uFE0F", tempC: 24, tempF: 75 },
-    arrive: "2024-12-24T11:50:00Z" },
-  { name: "Riyadh, Saudi Arabia", lat: 24.71, lng: 46.68, pop: 7.68,
-    fact: "Sits in the middle of one of the largest sand deserts on Earth.",
-    weather: { condition: "Cool desert night", icon: "\uD83C\uDF19", tempC: 12, tempF: 54 },
-    arrive: "2024-12-24T12:20:00Z" },
-  { name: "Nairobi, Kenya", lat: -1.29, lng: 36.82, pop: 4.73,
-    fact: "The only capital city with a national park inside it.",
-    weather: { condition: "Light rain", icon: "\uD83C\uDF26\uFE0F", tempC: 20, tempF: 68 },
-    arrive: "2024-12-24T12:50:00Z" },
-  { name: "Johannesburg, South Africa", lat: -26.20, lng: 28.05, pop: 5.78,
-    fact: "Built on the world's largest known gold deposit.",
-    weather: { condition: "Thunderstorm", icon: "\u26C8\uFE0F", tempC: 25, tempF: 77 },
-    arrive: "2024-12-24T13:20:00Z" },
-  { name: "Moscow, Russia", lat: 55.76, lng: 37.62, pop: 12.54,
-    fact: "The Moscow Metro has stations that look like underground palaces.",
-    weather: { condition: "Heavy snow", icon: "\uD83C\uDF28\uFE0F", tempC: -12, tempF: 10 },
-    arrive: "2024-12-24T13:50:00Z" },
-  { name: "Istanbul, Turkey", lat: 41.01, lng: 28.98, pop: 15.84,
-    fact: "The only city in the world on two continents!",
-    weather: { condition: "Chilly rain", icon: "\uD83C\uDF27\uFE0F", tempC: 7, tempF: 45 },
-    arrive: "2024-12-24T14:20:00Z" },
-  { name: "Athens, Greece", lat: 37.98, lng: 23.73, pop: 3.15,
-    fact: "Has been continuously inhabited for over 7,000 years.",
-    weather: { condition: "Mild", icon: "\u26C5", tempC: 13, tempF: 55 },
-    arrive: "2024-12-24T14:45:00Z" },
-  { name: "Cairo, Egypt", lat: 30.04, lng: 31.24, pop: 21.32,
-    fact: "The Great Pyramid was the tallest structure for 3,800 years.",
-    weather: { condition: "Clear", icon: "\uD83C\uDF19", tempC: 16, tempF: 61 },
-    arrive: "2024-12-24T15:10:00Z" },
-  { name: "Rome, Italy", lat: 41.90, lng: 12.50, pop: 4.35,
-    fact: "Romans throw \u20AC1.5 million into the Trevi Fountain each year.",
-    weather: { condition: "Cool & crisp", icon: "\u2744\uFE0F", tempC: 8, tempF: 46 },
-    arrive: "2024-12-24T15:40:00Z" },
-  { name: "Berlin, Germany", lat: 52.52, lng: 13.41, pop: 3.77,
-    fact: "Has more bridges than Venice \u2014 over 1,700!",
-    weather: { condition: "Light snow", icon: "\uD83C\uDF28\uFE0F", tempC: -1, tempF: 30 },
-    arrive: "2024-12-24T16:10:00Z" },
-  { name: "Paris, France", lat: 48.86, lng: 2.35, pop: 11.02,
-    fact: "The Eiffel Tower grows about 6 inches taller in summer heat.",
-    weather: { condition: "Overcast", icon: "\u2601\uFE0F", tempC: 5, tempF: 41 },
-    arrive: "2024-12-24T16:40:00Z" },
-  { name: "Z\u00FCrich, Switzerland", lat: 47.38, lng: 8.54, pop: 1.4,
-    fact: "Swiss trains are so punctual, a 3-minute delay makes the news.",
-    weather: { condition: "Snow", icon: "\uD83C\uDF28\uFE0F", tempC: -2, tempF: 28 },
-    arrive: "2024-12-24T17:00:00Z" },
-  { name: "Amsterdam, Netherlands", lat: 52.37, lng: 4.90, pop: 1.15,
-    fact: "Has more bicycles than people \u2014 about 881,000 bikes!",
-    weather: { condition: "Drizzle", icon: "\uD83C\uDF27\uFE0F", tempC: 4, tempF: 39 },
-    arrive: "2024-12-24T17:20:00Z" },
-  { name: "London, United Kingdom", lat: 51.51, lng: -0.13, pop: 9.0,
-    fact: "Big Ben is actually the name of the bell, not the tower.",
-    weather: { condition: "Foggy", icon: "\uD83C\uDF2B\uFE0F", tempC: 6, tempF: 43 },
-    arrive: "2024-12-24T17:50:00Z" },
-  { name: "Edinburgh, Scotland", lat: 55.95, lng: -3.19, pop: 0.54,
-    fact: "Inspired J.K. Rowling to write Harry Potter in its caf\u00E9s.",
-    weather: { condition: "Sleet", icon: "\uD83C\uDF28\uFE0F", tempC: 2, tempF: 36 },
-    arrive: "2024-12-24T18:10:00Z" },
-  { name: "Reykjavik, Iceland", lat: 64.15, lng: -21.94, pop: 0.23,
-    fact: "Has no McDonald\u2019s \u2014 the last one closed in 2009!",
-    weather: { condition: "Blizzard", icon: "\uD83C\uDF28\uFE0F", tempC: -5, tempF: 23 },
-    arrive: "2024-12-24T18:40:00Z" },
-  { name: "S\u00E3o Paulo, Brazil", lat: -23.55, lng: -46.63, pop: 22.04,
-    fact: "Has the largest Japanese community outside of Japan.",
-    weather: { condition: "Warm rain", icon: "\uD83C\uDF26\uFE0F", tempC: 26, tempF: 79 },
-    arrive: "2024-12-24T19:30:00Z" },
-  { name: "Rio de Janeiro, Brazil", lat: -22.91, lng: -43.17, pop: 13.63,
-    fact: "Christ the Redeemer is struck by lightning about 6 times per year.",
-    weather: { condition: "Hot & humid", icon: "\u2600\uFE0F", tempC: 30, tempF: 86 },
-    arrive: "2024-12-24T20:00:00Z" },
-  { name: "Buenos Aires, Argentina", lat: -34.60, lng: -58.38, pop: 15.37,
-    fact: "Has the widest avenue in the world \u2014 16 lanes across!",
-    weather: { condition: "Warm breeze", icon: "\uD83C\uDF24\uFE0F", tempC: 27, tempF: 81 },
-    arrive: "2024-12-24T20:30:00Z" },
-  { name: "Bogot\u00E1, Colombia", lat: 4.71, lng: -74.07, pop: 10.98,
-    fact: "One of the highest capital cities at 2,640 meters above sea level.",
-    weather: { condition: "Cool mountain air", icon: "\u26C5", tempC: 13, tempF: 55 },
-    arrive: "2024-12-24T21:00:00Z" },
-  { name: "Mexico City, Mexico", lat: 19.43, lng: -99.13, pop: 21.8,
-    fact: "Built on a lake \u2014 it sinks about 10 inches every year!",
-    weather: { condition: "Cool & dry", icon: "\uD83C\uDF19", tempC: 10, tempF: 50 },
-    arrive: "2024-12-24T21:40:00Z" },
-  { name: "Houston, USA", lat: 29.76, lng: -95.37, pop: 7.12,
-    fact: "Mission Control has guided every NASA human spaceflight since 1965.",
-    weather: { condition: "Mild", icon: "\u26C5", tempC: 14, tempF: 57 },
-    arrive: "2024-12-24T22:10:00Z" },
-  { name: "Chicago, USA", lat: 41.88, lng: -87.63, pop: 9.46,
-    fact: "The river is dyed green every St. Patrick's Day.",
-    weather: { condition: "Freezing", icon: "\uD83C\uDF28\uFE0F", tempC: -8, tempF: 18 },
-    arrive: "2024-12-24T22:40:00Z" },
-  { name: "Rochester, NY", lat: 43.16, lng: -77.61, pop: 0.21,
-    fact: "Where photographic film was invented.",
-    weather: { condition: "Heavy snow", icon: "\uD83C\uDF28\uFE0F", tempC: -6, tempF: 21 },
-    arrive: "2024-12-24T22:46:00Z" },
-  { name: "Syracuse, NY", lat: 43.05, lng: -76.15, pop: 0.15,
-    fact: "Gets around 10 feet of snow a year, more than almost any other city in America.",
-    weather: { condition: "Blizzard", icon: "\uD83C\uDF28\uFE0F", tempC: -7, tempF: 19 },
-    arrive: "2024-12-24T22:50:00Z" },
-  { name: "Fayetteville, NY", lat: 43.03, lng: -76.01, pop: 0.004,
-    fact: "Sits beside the old Erie Canal, which carried boats long before there were trains.",
-    weather: { condition: "Snow flurries", icon: "\uD83C\uDF28\uFE0F", tempC: -5, tempF: 23 },
-    arrive: "2024-12-24T22:53:00Z" },
-  { name: "Manlius, NY", lat: 43.00, lng: -75.98, pop: 0.005,
-    fact: "Has a swan pond right in the middle of the village.",
-    weather: { condition: "Light snow", icon: "\uD83C\uDF28\uFE0F", tempC: -5, tempF: 23 },
-    arrive: "2024-12-24T22:56:00Z" },
-  { name: "New York, USA", lat: 40.71, lng: -74.01, pop: 20.14,
-    fact: "Times Square is named after The New York Times, not the other way around.",
-    weather: { condition: "Light snow", icon: "\uD83C\uDF28\uFE0F", tempC: -2, tempF: 28 },
-    arrive: "2024-12-24T23:10:00Z" },
-  { name: "Toronto, Canada", lat: 43.65, lng: -79.38, pop: 6.2,
-    fact: "The CN Tower held the world's tallest structure record for 32 years.",
-    weather: { condition: "Snow", icon: "\uD83C\uDF28\uFE0F", tempC: -7, tempF: 19 },
-    arrive: "2024-12-24T23:30:00Z" },
-  { name: "Washington D.C., USA", lat: 38.91, lng: -77.04, pop: 6.3,
-    fact: "The Library of Congress has over 170 million items!",
-    weather: { condition: "Cold rain", icon: "\uD83C\uDF27\uFE0F", tempC: 2, tempF: 36 },
-    arrive: "2024-12-24T23:50:00Z" },
-  { name: "Los Angeles, USA", lat: 34.05, lng: -118.24, pop: 13.2,
-    fact: "The Hollywood sign originally said 'Hollywoodland' as a real estate ad.",
-    weather: { condition: "Clear & cool", icon: "\uD83C\uDF19", tempC: 12, tempF: 54 },
-    arrive: "2024-12-25T00:20:00Z" },
-  { name: "Anchorage, USA", lat: 61.22, lng: -149.90, pop: 0.3,
-    fact: "Moose outnumber people in many Anchorage neighborhoods.",
-    weather: { condition: "Snowstorm", icon: "\uD83C\uDF28\uFE0F", tempC: -15, tempF: 5 },
-    arrive: "2024-12-25T00:50:00Z" },
-  { name: "Honolulu, USA", lat: 21.31, lng: -157.86, pop: 0.98,
-    fact: "Hawaii's beaches are slowly made from parrotfish poop!",
-    weather: { condition: "Tropical breeze", icon: "\uD83C\uDF34", tempC: 24, tempF: 75 },
-    arrive: "2024-12-25T01:30:00Z" },
-];
-
-// Gifts per person estimate (not every person gets a gift, but Santa is generous)
-const GIFTS_PER_MILLION = 620_000;
-
 const routeTimes = ROUTE.map((s) => new Date(s.arrive).getTime());
 
-/* ── Cumulative gifts array (based on population) ── */
 const cumulativeGifts = [];
 {
   let sum = 0;
   for (const stop of ROUTE) {
-    sum += Math.round(stop.pop * GIFTS_PER_MILLION);
+    sum += stop.gifts;
     cumulativeGifts.push(sum);
   }
 }
 
-/* ── Great-circle distance (Haversine) in km ── */
 function haversineKm(lat1, lng1, lat2, lng2) {
   const R = 6371;
   const toRad = (d) => (d * Math.PI) / 180;
@@ -223,7 +27,6 @@ function haversineKm(lat1, lng1, lat2, lng2) {
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-/* Precompute leg distances */
 const legDistances = [];
 for (let i = 0; i < ROUTE.length - 1; i++) {
   legDistances.push(
@@ -242,10 +45,10 @@ const cumulativeDistance = [];
 
 /* ── Time helpers ── */
 function getChristmasEve(year) {
-  return new Date(Date.UTC(year, 11, 24, 5, 0, 0)).getTime();
+  return new Date(Date.UTC(year, 11, 24, 10, 0, 0)).getTime();
 }
 function getChristmasEnd(year) {
-  return new Date(Date.UTC(year, 11, 25, 2, 0, 0)).getTime();
+  return new Date(Date.UTC(year, 11, 25, 10, 0, 0)).getTime();
 }
 
 /* ── Speed / demo ── */
@@ -258,7 +61,7 @@ function getSimTime() {
   const now = Date.now();
   if (speedMode === "real") return now;
   if (!demoStart) {
-    demoStart = getChristmasEve(2024);
+    demoStart = getChristmasEve(new Date(now).getUTCFullYear());
     demoRealStart = now;
   }
   return demoStart + (now - demoRealStart) * DEMO_SPEEDS[speedMode];
@@ -275,20 +78,63 @@ const COUNTRY_COLORS = [
 /* ── Map setup ── */
 const container = document.getElementById("map-container");
 const svg = d3.select(container).append("svg").attr("aria-label", "World map showing Santa's flight path");
+const defs = svg.append("defs");
 const g = svg.append("g");
 
+/* Layered groups — appended in z-order (later = on top) */
+const countriesG = g.append("g");
+const overlayG = g.append("g").style("pointer-events", "none");
+const dimDotsG = g.append("g").style("pointer-events", "none");
+const litDotsG = g.append("g").style("pointer-events", "none");
+const stopMarkersG = g.append("g");
+const boundaryG = g.append("g").style("pointer-events", "none");
+const santaG = g.append("g").attr("id", "santa-group");
+
 let width, height, projection, path;
+
+/* Clip path — lit city dots only show in the delivered region */
+const deliveredClip = defs.append("clipPath").attr("id", "delivered-clip");
+const clipRect = deliveredClip.append("rect");
+litDotsG.attr("clip-path", "url(#delivered-clip)");
+
+/* Overlay gradient — dims undelivered land, warms delivered land */
+const overlayGrad = defs.append("linearGradient")
+  .attr("id", "overlay-grad")
+  .attr("gradientUnits", "userSpaceOnUse");
+
+const gStops = [
+  overlayGrad.append("stop").attr("stop-color", "rgba(5,8,25,0.38)"),
+  overlayGrad.append("stop").attr("stop-color", "rgba(5,8,25,0.32)"),
+  overlayGrad.append("stop").attr("stop-color", "rgba(0,0,0,0)"),
+  overlayGrad.append("stop").attr("stop-color", "rgba(255,180,60,0.08)"),
+  overlayGrad.append("stop").attr("stop-color", "rgba(255,150,40,0.12)"),
+];
+
+const overlayRect = overlayG.append("rect");
+
+/* Boundary glow — soft vertical line at Santa's longitude */
+const boundaryLine = boundaryG.append("rect")
+  .attr("fill", "rgba(255,210,80,0.25)")
+  .style("filter", "blur(6px)");
 
 function resize() {
   width = container.clientWidth;
   height = container.clientHeight;
   svg.attr("viewBox", `0 0 ${width} ${height}`);
-  projection = d3.geoEquirectangular().fitSize([width, height], { type: "Sphere" });
+  projection = d3.geoEquirectangular()
+    .rotate([-22.6, 0])
+    .fitSize([width, height], { type: "Sphere" });
   path = d3.geoPath(projection);
+
+  overlayGrad.attr("x1", 0).attr("y1", 0).attr("x2", width).attr("y2", 0);
+  overlayRect.attr("x", 0).attr("y", 0).attr("width", width).attr("height", height)
+    .attr("fill", "url(#overlay-grad)");
+  clipRect.attr("y", 0).attr("height", height);
+
   if (window._countries) renderCountries(window._countries);
   renderStars();
-  renderRoute();
   renderCityDots();
+  renderStopMarkers();
   updateSanta();
 }
 
@@ -310,8 +156,8 @@ function renderStars() {
 
 /* Countries */
 function renderCountries(countries) {
-  g.selectAll("path.country").remove();
-  g.selectAll("path.country")
+  countriesG.selectAll("path.country").remove();
+  countriesG.selectAll("path.country")
     .data(countries.features)
     .enter()
     .append("path")
@@ -322,32 +168,42 @@ function renderCountries(countries) {
     .attr("stroke-width", 0.5);
 }
 
-/* Route line */
-function renderRoute() {
-  g.selectAll(".route-line").remove();
-  const coords = ROUTE.map((s) => projection([s.lng, s.lat]));
-  g.append("path")
-    .attr("class", "route-line")
-    .attr("d", d3.line()(coords))
-    .attr("fill", "none")
-    .attr("stroke", "rgba(255,215,0,0.3)")
-    .attr("stroke-width", 1.5)
-    .attr("stroke-dasharray", "6,4");
+/* City dots — 937 world cities, dim everywhere + lit in delivered region */
+function renderCityDots() {
+  dimDotsG.selectAll("*").remove();
+  litDotsG.selectAll("*").remove();
+
+  CITIES.forEach(([lng, lat]) => {
+    const p = projection([lng, lat]);
+    if (!p) return;
+    dimDotsG.append("circle")
+      .attr("cx", p[0]).attr("cy", p[1])
+      .attr("r", 1.0)
+      .attr("fill", "#3a5060")
+      .attr("opacity", 0.3);
+    litDotsG.append("circle")
+      .attr("cx", p[0]).attr("cy", p[1])
+      .attr("r", 1.4)
+      .attr("fill", "#ffcc44")
+      .attr("opacity", 0.65);
+  });
 }
 
-/* City dots */
-function renderCityDots() {
-  g.selectAll(".city-dot").remove();
+/* Route stop markers — 87 stops, appear when visited */
+function renderStopMarkers() {
+  stopMarkersG.selectAll("*").remove();
   const tooltip = document.getElementById("city-tooltip");
-  ROUTE.forEach((stop) => {
-    const [cx, cy] = projection([stop.lng, stop.lat]);
-    g.append("circle")
-      .attr("class", "city-dot")
-      .attr("cx", cx)
-      .attr("cy", cy)
+
+  ROUTE.forEach((stop, i) => {
+    const p = projection([stop.lng, stop.lat]);
+    if (!p) return;
+    stopMarkersG.append("circle")
+      .attr("class", "stop-marker")
+      .attr("data-idx", i)
+      .attr("cx", p[0]).attr("cy", p[1])
       .attr("r", 3)
       .attr("fill", "#ffd700")
-      .attr("opacity", 0.7)
+      .attr("opacity", 0)
       .attr("stroke", "#fff")
       .attr("stroke-width", 0.5)
       .on("mouseenter", function (e) {
@@ -364,26 +220,17 @@ function renderCityDots() {
 }
 
 /* ── Santa SVG from external asset ── */
-const santaG = g.append("g").attr("id", "santa-group");
 let reindeerLabel = null;
 
-// Load sleigh.svg from shared loader, extract the #rig group, inject it into the map
 sleighSvgReady.then((svgText) => {
     if (!svgText) return;
     const parser = new DOMParser();
     const doc = parser.parseFromString(svgText, "image/svg+xml");
     const rig = doc.getElementById("rig");
     if (!rig) return;
-
-    // Import the node into the live document and append to santaG
     const imported = document.importNode(rig, true);
     santaG.node().appendChild(imported);
-
-    // Apply saved sleigh colour
     applySleighColor(state.sleighColor || "#cc0000");
-
-    // Add reindeer name label beneath the rig
-    // The rig's viewBox spans roughly 0..240 x 0..110, centred around ~120,60
     reindeerLabel = santaG.append("text")
       .attr("x", 50).attr("y", 100)
       .attr("text-anchor", "middle")
@@ -399,12 +246,10 @@ sleighSvgReady.then((svgText) => {
 
 function applySleighColor(color) {
   const node = santaG.node();
-  // .sleigh-body fill and .sleigh-scroll stroke as noted in the SVG comments
   node.querySelectorAll(".sleigh-body").forEach((el) => el.setAttribute("fill", color));
   node.querySelectorAll(".sleigh-scroll").forEach((el) => el.setAttribute("stroke", color));
 }
 
-/* Listen for customizer updates */
 window.addEventListener("sleigh-updated", () => {
   state = loadState();
   applySleighColor(state.sleighColor || "#cc0000");
@@ -414,7 +259,7 @@ window.addEventListener("sleigh-updated", () => {
 /* ── Timing / state ── */
 function getSantaState(simNow) {
   const year = new Date(simNow).getUTCFullYear();
-  const yearOffset = getChristmasEve(year) - getChristmasEve(2024);
+  const yearOffset = getChristmasEve(year) - getChristmasEve(2026);
   const times = routeTimes.map((t) => t + yearOffset);
 
   if (simNow < times[0]) {
@@ -444,13 +289,16 @@ function getSantaState(simNow) {
       const t = (simNow - times[i]) / (times[i + 1] - times[i]);
       const a = ROUTE[i],
         b = ROUTE[i + 1];
+      let dlng = b.lng - a.lng;
+      if (dlng > 180) dlng -= 360;
+      if (dlng < -180) dlng += 360;
       return {
         phase: "flying",
         stopIdx: i,
         nextIdx: i + 1,
         t,
         lat: a.lat + (b.lat - a.lat) * t,
-        lng: a.lng + (b.lng - a.lng) * t,
+        lng: a.lng + dlng * t,
         times,
       };
     }
@@ -501,11 +349,10 @@ let targetGifts = 0;
 function getGiftsDelivered(st) {
   if (st.phase === "before") return 0;
   if (st.phase === "done") return cumulativeGifts[cumulativeGifts.length - 1];
-  // completed stops + interpolated current leg
   const completed = st.stopIdx >= 0 ? cumulativeGifts[st.stopIdx] : 0;
   const legGifts =
     st.stopIdx < ROUTE.length - 1
-      ? Math.round(ROUTE[st.nextIdx].pop * GIFTS_PER_MILLION) * st.t
+      ? Math.round(ROUTE[st.nextIdx].gifts * st.t)
       : 0;
   return Math.floor(completed + legGifts);
 }
@@ -531,12 +378,9 @@ function getDistanceAndSpeed(st) {
   const completedDist = cumulativeDistance[st.stopIdx];
   const legDist = legDistances[st.stopIdx];
   const distKm = Math.round(completedDist + legDist * st.t);
-
-  // Speed from current leg: distance / time
   const legTimeMs = st.times[st.nextIdx] - st.times[st.stopIdx];
   const legTimeH = legTimeMs / 3_600_000;
   const speedKmh = legTimeH > 0 ? Math.round(legDist / legTimeH) : 0;
-
   return { distKm, speedKmh };
 }
 
@@ -549,11 +393,54 @@ function updateCountdownOverlay(realNow) {
   const hours = Math.floor((totalSec % 86400) / 3600);
   const mins = Math.floor((totalSec % 3600) / 60);
   const secs = totalSec % 60;
-
   document.getElementById("cd-days").textContent = days;
   document.getElementById("cd-hours").textContent = pad2(hours);
   document.getElementById("cd-mins").textContent = pad2(mins);
   document.getElementById("cd-secs").textContent = pad2(secs);
+}
+
+/* ── Delivered-region boundary ── */
+function getDeliveredBoundaryX(st) {
+  if (st.phase === "before") return width;
+  if (st.phase === "done") return 0;
+
+  const pos = projection([st.lng, st.lat]);
+  if (!pos) return width;
+
+  const departPos = projection([ROUTE[st.stopIdx].lng, ROUTE[st.stopIdx].lat]);
+  if (!departPos) return pos[0];
+
+  // If projected x jumped far rightward, the path crossed the map seam.
+  if (pos[0] > departPos[0] + width * 0.3) {
+    return Math.max(0, departPos[0] * (1 - st.t));
+  }
+  return pos[0];
+}
+
+function updateDelivered(bx, phase, visitedStops) {
+  const frac = Math.max(0, Math.min(1, bx / width));
+  const edge = 0.04;
+  gStops[0].attr("offset", "0%");
+  gStops[1].attr("offset", `${Math.max(0, frac - edge) * 100}%`);
+  gStops[2].attr("offset", `${frac * 100}%`);
+  gStops[3].attr("offset", `${Math.min(1, frac + edge) * 100}%`);
+  gStops[4].attr("offset", "100%");
+
+  clipRect.attr("x", bx).attr("width", Math.max(0, width - bx));
+
+  stopMarkersG.selectAll(".stop-marker").each(function () {
+    const idx = parseInt(this.getAttribute("data-idx"));
+    this.setAttribute("opacity", idx <= visitedStops ? "0.85" : "0");
+  });
+
+  if (phase === "flying") {
+    boundaryLine
+      .attr("x", bx - 5).attr("y", 0)
+      .attr("width", 10).attr("height", height)
+      .attr("opacity", 0.7);
+  } else {
+    boundaryLine.attr("opacity", 0);
+  }
 }
 
 /* ── Main update ── */
@@ -564,19 +451,20 @@ function updateSanta() {
   const inSeason = isChristmasSeason(realNow);
   const inSimSeason = speedMode !== "real" || inSeason;
 
-  // Position Santa on map (only if map projection is ready)
   if (projection) {
     const pos = projection([st.lng, st.lat]);
-    if (pos) santaG.attr("transform", `translate(${pos[0] - 120 * 0.42},${pos[1] - 55 * 0.42}) scale(0.42)`);
+    if (pos) {
+      santaG.attr("transform", `translate(${pos[0] - 120 * 0.42},${pos[1] - 55 * 0.42}) scale(0.42)`);
+      const bx = getDeliveredBoundaryX(st);
+      updateDelivered(bx, st.phase, st.stopIdx);
+    }
   }
 
   const overlay = document.getElementById("countdown-overlay");
 
-  // Off-season: show big countdown
   if (!inSimSeason && st.phase === "before") {
     overlay.classList.remove("hidden");
     updateCountdownOverlay(realNow);
-
     setText("status-text", "Parked at North Pole");
     setText("status-sub", "Waiting for Christmas Eve");
     setText("current-city", "North Pole");
@@ -585,8 +473,7 @@ function updateSanta() {
     setText("next-city", ROUTE[0].name);
     setText("next-eta", "On Christmas Eve!");
     setText("gift-count", "0");
-    setText("gift-sub", "Loading the sleigh\u2026");
-    // Off-season: show local time at first stop (Apia) as a fallback
+    setText("gift-sub", "Loading the sleigh…");
     updateLocalTimePanel(realNow, ROUTE[0].lng);
     setText("distance-val", "0 km");
     setText("speed-val", "0 km/h");
@@ -617,10 +504,7 @@ function updateSanta() {
     setText("status-sub", `${rName} leading the way between ${prev.name} and ${next.name}`);
     setText("current-city", prev.name);
     setText("current-fact", prev.fact);
-    setHtml(
-      "current-weather",
-      `<span class="weather-icon">${prev.weather.icon}</span>${prev.weather.condition}, ${prev.weather.tempC}\u00B0C / ${prev.weather.tempF}\u00B0F`
-    );
+    setHtml("current-weather", "");
     setText("next-city", next.name);
     setText("next-eta", formatDuration(eta));
 
@@ -631,27 +515,21 @@ function updateSanta() {
     setText("distance-val", distKm.toLocaleString() + " km");
     setText("speed-val", speedKmh.toLocaleString() + " km/h");
   } else {
-    // done
     const last = ROUTE[ROUTE.length - 1];
     setText("status-text", "Journey Complete!");
     setText("status-sub", "Merry Christmas!");
     setText("current-city", last.name);
     setText("current-fact", last.fact);
-    setHtml(
-      "current-weather",
-      `<span class="weather-icon">${last.weather.icon}</span>${last.weather.condition}, ${last.weather.tempC}\u00B0C / ${last.weather.tempF}\u00B0F`
-    );
+    setHtml("current-weather", "");
     setText("next-city", "North Pole");
     setText("next-eta", "Heading home!");
     targetGifts = cumulativeGifts[cumulativeGifts.length - 1];
     setText("gift-sub", "All stops visited!");
-
     const totalDist = Math.round(cumulativeDistance[cumulativeDistance.length - 1]);
     setText("distance-val", totalDist.toLocaleString() + " km");
     setText("speed-val", "0 km/h");
   }
 
-  // Local time at Santa's position — use sleigh lng, fall back to next stop
   const lng = (typeof st.lng === "number" && !isNaN(st.lng))
     ? st.lng
     : (st.nextIdx != null ? ROUTE[st.nextIdx].lng : ROUTE[0].lng);
@@ -660,7 +538,7 @@ function updateSanta() {
 
 function updateLocalTimePanel(utcMs, lng) {
   if (typeof lng !== "number" || isNaN(lng)) {
-    setText("local-time", "\u2014");
+    setText("local-time", "—");
     setText("local-tz", "");
     return;
   }
@@ -705,15 +583,12 @@ document.getElementById("search-btn").addEventListener("click", doSearch);
 document.getElementById("city-search").addEventListener("keydown", (e) => {
   if (e.key === "Enter") doSearch();
 });
-// Live search on input
 document.getElementById("city-search").addEventListener("input", doSearch);
 
 function fuzzyScore(query, target) {
   const q = query.toLowerCase();
   const t = target.toLowerCase();
-  // Exact substring match is best
   if (t.includes(q)) return 1000 - t.indexOf(q);
-  // Character-by-character fuzzy
   let qi = 0;
   let score = 0;
   let consecutive = 0;
@@ -729,7 +604,6 @@ function fuzzyScore(query, target) {
   return qi === q.length ? score : 0;
 }
 
-/* Known locations for geocoding search queries that aren't on the route */
 const KNOWN_LOCATIONS = {
   "ithaca":[42.44,-76.50],"binghamton":[42.10,-75.91],"utica":[43.10,-75.23],
   "albany":[42.65,-73.76],"buffalo":[42.89,-78.88],"schenectady":[42.81,-73.94],
@@ -771,14 +645,13 @@ function doSearch() {
     return;
   }
 
-  // Score all stops
   const scored = ROUTE.map((stop) => ({ stop, score: fuzzyScore(q, stop.name) }))
     .filter((s) => s.score > 0)
     .sort((a, b) => b.score - a.score);
 
   const simNow = getSimTime();
   const year = new Date(simNow).getUTCFullYear();
-  const yearOffset = getChristmasEve(year) - getChristmasEve(2024);
+  const yearOffset = getChristmasEve(year) - getChristmasEve(2026);
 
   if (scored.length > 0) {
     const match = scored[0].stop;
@@ -788,18 +661,14 @@ function doSearch() {
       const timeStr = formatTimeFromMs(arriveTime);
       result.innerHTML =
         `<span style="color:var(--green)">Santa visited <strong>${match.name}</strong> at ${timeStr}!</span>` +
-        `<br><span class="fun-fact">${match.fact}</span>` +
-        `<br><span class="weather-info">${match.weather.icon} ${match.weather.condition}, ${match.weather.tempC}\u00B0C / ${match.weather.tempF}\u00B0F</span>`;
+        `<br><span class="fun-fact">${match.fact}</span>`;
     } else {
       const eta = arriveTime - simNow;
       result.innerHTML =
         `<span style="color:var(--blue)">Santa will arrive at <strong>${match.name}</strong> in about <strong>${formatDuration(eta)}</strong>!</span>` +
-        `<br><span class="fun-fact">${match.fact}</span>` +
-        `<br><span class="weather-info">${match.weather.icon} Expected: ${match.weather.condition}, ${match.weather.tempC}\u00B0C / ${match.weather.tempF}\u00B0F</span>`;
+        `<br><span class="fun-fact">${match.fact}</span>`;
     }
   } else {
-    // No fuzzy match — find nearest stop by great-circle distance to all stops
-    // Since we don't know the kid's location, just suggest the closest-named stop
     const nearest = nearestStop(q);
     if (nearest) {
       result.innerHTML =
